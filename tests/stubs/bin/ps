@@ -1,0 +1,7 @@
+#!/bin/bash
+# Stub ps. Lists the pmon processes of node STUB_NODE (default 1).
+n=${STUB_NODE:-1}
+case "$*" in
+    *pid*) printf ' 4242 ora_pmon_DEMODB%s\n 4100 asm_pmon_+ASM%s\n' "$n" "$n" ;;
+    *)     printf 'ora_pmon_DEMODB%s\nasm_pmon_+ASM%s\n' "$n" "$n" ;;
+esac

@@ -1,0 +1,6 @@
+SESSION LIMIT|Inst 1 processes|612 of 1500|OK
+SESSION LIMIT|Inst 1 sessions|655 of 2272|OK
+SESSION LIMIT|Inst 2 processes|598 of 1500|OK
+SESSION LIMIT|Inst 2 sessions|640 of 2272|OK
+BLOCKING|Sessions blocked > 300s|0|OK
+LONG CALLS|Active calls > 1800s|0|OK

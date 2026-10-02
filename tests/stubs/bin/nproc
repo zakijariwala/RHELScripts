@@ -1,0 +1,3 @@
+#!/bin/bash
+# Stub nproc. Always 8 cores.
+echo 8

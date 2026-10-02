@@ -1,0 +1,3 @@
+#!/bin/bash
+# Stub olsnodes. Two nodes.
+printf 'racnode1\nracnode2\n'

@@ -1,5 +1,10 @@
-# Ansible
+# Ansible (on hold)
 
-Phase 3 adds read-only check playbooks for many servers. Phase 4 adds guarded actions such as rolling reboots.
+Ansible work (checks across many servers from one control node, guarded
+actions such as rolling reboots) is on hold. Scripts reach servers only by
+being typed by hand, and no approved path exists to move files onto a
+control node. See [AMENDMENT 01](../docs/decisions/AMENDMENT-01.md), D5.
 
-Until then, start at [docs/00-start-here.md](../docs/00-start-here.md).
+If a transfer path is ever approved, this folder will first get reference
+documentation only, no playbooks, under the same safety rules as the bash
+scripts ([CLAUDE.md](../CLAUDE.md)).

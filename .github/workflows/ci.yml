@@ -1,7 +1,5 @@
-# CI for every push and pull request.
-# Jobs that have nothing to check yet (no .bats files, no playbooks) pass
-# with a notice instead of failing, so each phase can switch its job on by
-# adding files.
+# CI: the same checks as the pre-commit hook, plus gitleaks and the
+# checksum check on RHEL 8 and 9 rebuilds. Every job fails loudly.
 name: ci
 
 on:
@@ -12,70 +10,37 @@ permissions:
   contents: read
 
 jobs:
-  shellcheck:
+  check-all:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: shellcheck every .sh file
+      - name: tools/check-all.sh
         run: |
           shellcheck --version
-          find scripts tools tests -name '*.sh' -print0 | xargs -0 -r shellcheck
-          shellcheck tools/git-hooks/pre-commit
+          tools/check-all.sh
 
-  # Both repo tools run on Ubuntu (mawk) and on RHEL 8 / 9 rebuilds (gawk),
-  # because fresher-facing scripts must run on the RHEL targets.
-  repo-tools:
+  # The fresher verifies typed scripts with gawk on RHEL. The README
+  # tables come from the same commands; prove gawk gives the same hashes
+  # and that every script parses with RHEL's bash.
+  rhel:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        image: ["", "rockylinux:8", "rockylinux:9"]
-    container: ${{ matrix.image != '' && matrix.image || null }}
+        image: ["rockylinux:8", "rockylinux:9"]
+    container: ${{ matrix.image }}
     steps:
-      - name: install git (RHEL containers)
-        if: matrix.image != ''
-        run: dnf -y -q install git-core findutils grep gawk
+      - name: install tools
+        run: dnf -y -q install git-core findutils gawk coreutils diffutils
       - uses: actions/checkout@v4
-      - name: check-readonly-sql
-        run: tools/check-readonly-sql.sh
-      - name: check-sanitized
-        env:
-          BANNED_TERMS: ${{ secrets.BANNED_TERMS }}
+      - name: bash -n every script
         run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          if [ -n "$BANNED_TERMS" ]; then
-            printf '%s\n' "$BANNED_TERMS" > tools/banned-terms.txt
-            tools/check-sanitized.sh
-          else
-            echo "::warning::Secret BANNED_TERMS is not set; banned-terms check skipped. See docs/safety.md."
-            tools/check-sanitized.sh --allow-missing-terms
-          fi
-
-  bats:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: run bats tests
+          bash --version | head -1
+          for f in scripts/*/*/*.sh; do bash -n "$f" || exit 1; done
+      - name: checksum tables match under gawk
         run: |
-          if ! find tests -name '*.bats' | grep -q .; then
-            echo "::notice::No .bats files yet; bats job skipped."
-            exit 0
-          fi
-          sudo apt-get update -q && sudo apt-get install -y -q bats
-          bats --recursive tests
-
-  ansible-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: run ansible-lint
-        run: |
-          if ! find ansible -name '*.yml' -not -name '*.example' | grep -q .; then
-            echo "::notice::No Ansible YAML yet; ansible-lint job skipped."
-            exit 0
-          fi
-          pip install --quiet ansible-lint
-          cd ansible && ansible-lint
+          awk --version | head -1
+          tools/gen-checksums.sh --check
 
   gitleaks:
     runs-on: ubuntu-latest

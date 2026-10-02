@@ -1,0 +1,3 @@
+#!/bin/bash
+# Stub crsctl. "crsctl stat res -t" prints $STUB_FIXTURES/crsctl.out.
+cat "$STUB_FIXTURES/crsctl.out"

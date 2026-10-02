@@ -1,0 +1,1 @@
+TEST|sqlplus login|DEMODB1 OPEN|OK

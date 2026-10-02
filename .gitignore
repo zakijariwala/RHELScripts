@@ -1,6 +1,6 @@
-# Real values never enter git. Each ignored file has a committed *.example.
+# Real values never enter git.
 
-# Script configuration with real hosts, schema names, mail addresses
+# Script configuration typed on the servers (real hosts, schema names)
 config.env
 **/config.env
 
@@ -17,15 +17,7 @@ ansible/host_vars/
 .vault_pass*
 *.retry
 
-# Banned-terms list for tools/check-sanitized.sh (the words stay local)
-tools/banned-terms.txt
 
-# Run output: history logs, lock files, reports
-checklist_history/
-*.log
-*.lock
-*.out
-report*.html
 
 # Keys and secrets
 *.pem

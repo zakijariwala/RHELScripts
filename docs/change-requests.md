@@ -9,14 +9,16 @@ it, so the approvers see the same facts for every change from this repo.
 
 | What you plan to do on production | CR needed? |
 |---|---|
-| Run a monitoring script from this repo for the first time | Yes |
-| Run the same version again by hand, after its first CR closed | Follow your team's rule; most teams say no |
-| Run a new version of a monitoring script | Yes |
-| Add, change or remove a cron entry | Yes |
+| Type a monitoring script on a production server for the first time | Yes |
+| Run a monitoring script on production for the first time | Yes |
+| Run the same version again, after its first CR closed | Follow your team's rule; the [approval checklist](approval-checklist.md) is needed for every run regardless |
+| Type and run a new version of a script | Yes |
 | Change `config.env` thresholds or hosts | Yes, unless your team lists it as a standard change |
-| Copy a script to a server without running it | Follow your team's rule |
-| Run any action (reboot, restart) from `actions/` | Yes, every time |
-| Install a package (sysstat, Ansible) | Yes |
+| Install a package (sysstat) | Yes |
+
+Cron entries and actions (reboots, restarts) do not exist in this repo:
+every run is manual and approved
+([AMENDMENT 01](decisions/AMENDMENT-01.md)).
 
 If you are not sure, raise one. A CR nobody needed costs ten minutes. A
 change nobody approved can cost your job.
@@ -30,7 +32,7 @@ value.
 ```
 TITLE
   CHANGE_ME_TITLE
-  (One line. Example: "Deploy read-only Oracle RAC checklist v2.1 on CHANGE_ME_ENV")
+  (One line. Example: "Type and run read-only db-check.sh 1.0.0 on CHANGE_ME_ENV")
 
 CHANGE TYPE
   CHANGE_ME_TYPE
@@ -51,8 +53,8 @@ WHY
 
 READ-ONLY OR STATE-CHANGING
   CHANGE_ME_READONLY_OR_ACTION
-  (Monitoring scripts: "Read-only. SQL audit passed: <paste the RESULT line
-   of tools/check-readonly-sql.sh>". Actions: list every state it changes.)
+  (Monitoring scripts: "Read-only, writes nothing. Typed copy verified
+   against the README checksum table, whole-file hash <hash>".)
 
 WHAT IT READS AND WRITES
   CHANGE_ME_READS_WRITES
@@ -61,7 +63,8 @@ WHAT IT READS AND WRITES
 
 TESTED ON
   CHANGE_ME_PREPROD_RESULT
-  (Date and outcome of the pre-production run. Attach its output.)
+  (Date and outcome of the pre-production run. Attach its output and the
+   filled approval checklist.)
 
 RISK AND IMPACT
   CHANGE_ME_RISK
@@ -84,8 +87,7 @@ VERIFICATION
 
 BACKOUT PLAN
   CHANGE_ME_BACKOUT
-  (How you undo it. Read-only script: delete the script folder and any cron
-   line. Actions: the exact reverse steps.)
+  (How you undo it. Read-only script: delete the script's folder.)
 
 WINDOW
   CHANGE_ME_WINDOW
@@ -101,52 +103,51 @@ PEOPLE
 
 ```
 TITLE
-  Run read-only Oracle RAC checklist v2.1 on CHANGE_ME_ENV production cluster
+  Type and run read-only db-check.sh 1.0.0 on CHANGE_ME_ENV production cluster
 
 CHANGE TYPE
   Normal
 
 SYSTEMS AFFECTED
-  CHANGE_ME_NODE1_HOSTNAME, CHANGE_ME_NODE2_HOSTNAME, CHANGE_ME_GG_HOSTNAME
+  CHANGE_ME_NODE1_HOSTNAME
 
 WHAT CHANGES
-  Copy scripts/oracle-rac-checklist/checklist.sh (commit 1a2b3c4) and its
-  config.env to /home/oracle/scripts on node 1. Run it once by hand as the
-  oracle user. No cron entry in this change.
+  Type scripts/oracle-rac/db-check/db-check.sh version 1.0.0 by hand into
+  /home/oracle/scripts/oracle-rac/db-check/ on node 1, with a one-line
+  config.env (APP_USER). Run it once by hand as oracle. No cron.
 
 WHY
-  Replace the manual checklist mail with a generated report that flags
-  failures the old script hid.
+  Replace the manual checklist with a script that flags failures the old
+  one hid.
 
 READ-ONLY OR STATE-CHANGING
-  Read-only. SQL audit passed:
-  "scripts/oracle-rac-checklist/checklist.sh: 20 SELECT, 1 WITH, 10 SET, 1 EXIT"
+  Read-only, writes nothing. Typed copy verified: every section hash and
+  the whole-file hash match the README (CHANGE_ME_WHOLE_FILE_HASH).
 
 WHAT IT READS AND WRITES
-  Reads: Oracle dictionary views, crsctl status, sar/free/df on both nodes,
-  gg2.sh output over ssh, two status files in /home/oracle.
-  Writes: /tmp/checklist_oracle.lock. With --no-history, nothing else.
+  Reads: the database through sqlplus / as sysdba (SELECT only), ps,
+  /etc/oracle/olr.loc, olsnodes.
+  Writes: nothing.
 
 TESTED ON
-  Pre-production, CHANGE_ME_DATE. Output attached. Exit code 1 (expected
-  WARN rows listed in the attachment).
+  Pre-production, CHANGE_ME_DATE. Output and approval checklist attached.
 
 RISK AND IMPACT
-  One sqlplus session for under one minute, one ssh call each to node 2 and
-  the GoldenGate host. No service impact.
+  Three short sqlplus sessions, under one minute in total. No service
+  impact.
 
 PRE-CHECKS
-  oracle user can ssh to node 2 without a password. sysstat installed on
-  both nodes.
+  bash db-check.sh --check-config: every TEST row OK, no MISMATCH.
 
 IMPLEMENTATION STEPS
-  1-9 from scripts/oracle-rac-checklist/README.md, section "Set up".
+  docs/typing-guide.md, then the README of db-check.sh, sections
+  "Type it", "Configure", "Check the configuration", "Run".
 
 VERIFICATION
-  Script exits 0, 1 or 2 and prints a SUMMARY row. No "DB QUERY" CRIT rows.
+  Exit code 0, 1 or 2 and a SUMMARY row. No DB QUERY rows.
 
 BACKOUT PLAN
-  rm -r /home/oracle/scripts/oracle-rac-checklist
+  rm -r /home/oracle/scripts/oracle-rac/db-check
 
 WINDOW
   CHANGE_ME_WINDOW

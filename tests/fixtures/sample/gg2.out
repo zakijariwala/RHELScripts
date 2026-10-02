@@ -1,0 +1,2 @@
+Extract_Name,Status,Last_Started,Lag_Time,Checkpoint_Time,SCN
+"X_EXTRACT1","RUNNING","2026-09-20 15:37","00:00:04","@CKPT@","18.25 (79891234567)"

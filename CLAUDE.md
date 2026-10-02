@@ -1,22 +1,39 @@
 # CLAUDE.md
 
 Rules for every Claude Code session in this repo. Read all of it before
-changing anything.
+changing anything. [docs/decisions/AMENDMENT-01.md](docs/decisions/AMENDMENT-01.md)
+records why the repo works this way.
+
+## First command of every session
+
+```
+git config core.hooksPath .githooks
+```
+
+The pre-commit hook runs `tools/check-all.sh` on the staged tree and
+blocks the commit on any failure. Never bypass it with `--no-verify`.
 
 ## The repo
 
-Linux and Oracle monitoring and operations scripts for a banking
-infrastructure team. Bash check scripts under `scripts/`, Ansible under
-`ansible/`. The repo is **public**.
+Read-only monitoring scripts for Oracle 19c RAC clusters on RHEL 8 and 9
+(RAC, ASM, Grid Infrastructure, Data Guard, GoldenGate). The repo is
+**public**.
 
-- Targets: RHEL 8 and RHEL 9, Oracle 19c (RAC, ASM, Grid Infrastructure,
-  Data Guard, GoldenGate).
-- Servers have no internet access. Installs are offline (RPMs copied in,
-  no pip or ansible-galaxy from the internet). See `docs/offline-install.md`.
-- You have no access to any real server. Everything you run, you run
-  locally against stubs in `tests/stubs/` and fixtures in `tests/fixtures/`.
-- Change management applies on production. Anything scheduled or
-  state-changing needs an approved change request (`docs/change-requests.md`).
+- The repo lives on GitHub only. The owner changes it through Claude Code
+  only. Nobody clones it onto a server or a desktop, and nobody edits in
+  the browser.
+- A fresher reads each script on GitHub and **types it by hand** on the
+  server. No copy-paste, no file transfer.
+- Config values come from the team's inventory sheet; the fresher types
+  them into `config.env` next to the script.
+- Every run is manual and approved by a senior first. No cron, no
+  unattended runs.
+- Servers have no internet. Pre-production has no GoldenGate.
+- ssh between hosts is allowed: `node-check.sh` and `gg-check.sh` run on
+  node 1 and reach the other hosts over ssh.
+- Ansible (Phases 3 and 4) is on hold. No playbooks.
+- You have no access to any real server. You run everything against the
+  stubs in `tests/` (`tests/run-stub.sh NAME`).
 
 ## How the owner wants you to work
 
@@ -24,126 +41,144 @@ infrastructure team. Bash check scripts under `scripts/`, Ansible under
 - Direct, unvarnished assessments. Flag problems plainly.
 - Do only what the current task asks. List extra ideas under
   "Proposed, not done". Do not build them. Ask first.
-- If you find a bug or a doubtful choice in an existing script, report it
-  with evidence and a proposed fix. Change check logic only after the owner
+- A bug or doubtful choice in existing check logic: report it with
+  evidence and a proposed fix. Change check logic only after the owner
   agrees.
 - Summaries: what exists, how you verified it, what is open.
 
-## The fresher test (every doc must pass)
+## Safety (never break these)
 
-A fresher knows basic Linux (cd, ls, cat, vi, ssh, sudo) and has never used
-Oracle, RAC, Data Guard, GoldenGate or Ansible.
+1. **Monitoring is read-only.** SQL is `SELECT`/`WITH` only, plus SQL*Plus
+   `SET`, `DEFINE` and `EXIT`.
+2. **Scripts write nothing.** Output goes to stdout and stderr only. No
+   files, nothing in `/tmp`, no `rm`, no `-delete`, no `>` or `>>` to any
+   path except `/dev/null`. Over ssh, only read-only commands.
+3. **Actions are separate and guarded** (none exist today). Anything that
+   changes state lives under `scripts/actions/`, refuses to run without
+   `--i-understand`, prints what it will do and where, supports a dry run,
+   works one host at a time, runs a pre-check and a post-check, and has a
+   README section "Before you run this on production" pointing to
+   `docs/change-requests.md`.
+4. **No real identifiers in the repo.** No IPs, hostnames, ports other
+   than 22, DB or schema names, people, email addresses, or employer
+   names. Example IPs: 192.0.2.x, 198.51.100.x, 203.0.113.x. Example mail:
+   example.com. Placeholders look like `CHANGE_ME_SOMETHING`.
+5. **No secrets.** No passwords, keys, tokens.
+6. Never weaken a check, a test or a repo tool to get green. Flag it.
 
-- Every command is copy-paste ready, in its own code block, with the
-  expected output shown underneath.
-- One action per numbered step.
-- Show what success looks like and what failure looks like at each step.
-- "If you see X, do Y" for every failure you can predict.
-- Define each term on first use and link it to `docs/glossary.md`.
-- Never write "simply", "just", "obviously", "easy".
-- Say who runs each command (root, oracle, your user) and on which machine
-  (node 1, node 2, control node).
-- Every placeholder looks like `CHANGE_ME_SOMETHING` and the doc says where
-  to find the real value.
+## Typing budget (every script under scripts/)
 
-## Hard rules
+- At most **200 lines** per script (the owner raised it from 150 because
+  the shared sections take about 100 lines). At most **80 characters** per
+  line.
+- ASCII only. No tabs. No backticks. No backslash-dollar anywhere.
+- No variable named `l`, `O` or `I`.
+- Line 1 `#!/bin/bash`, line 2 `#== S01 settings`. Sections marked
+  `#== Snn name`, numbered in order.
+- At most one short comment line per section. Rationale and history live
+  in the CHANGELOG and HOW-IT-WORKS, never in a script.
+- Shared sections, identical in every script and each 25 lines or fewer:
+  `helpers`, `output`, `config`, `options`; `sql` in every database
+  script. Masters live in `tools/shared/`; `tools/sync-shared.sh` copies
+  them in. Edit the masters, never the copies.
+- Over budget: split the script. Never squeeze code to fit.
 
-### Safety (never break these)
+## SQL without escapes
 
-1. **Monitoring is read-only.** Scripts under `scripts/` and playbooks under
-   `ansible/playbooks/checks/` must not change DB or OS state. SQL is
-   `SELECT`/`WITH` only, plus SQL*Plus `SET` and `EXIT`.
-   `tools/check-readonly-sql.sh` enforces this. Write every SQL heredoc so
-   the tool can see it: open it on the `sqlplus` line, or give it a
-   delimiter containing `SQL` (`<<EOSQL`).
-2. **Actions are separate and guarded.** Anything that changes state lives
-   under `ansible/playbooks/actions/` or `scripts/actions/`. Each one:
-   - refuses to run without an explicit flag (`-e confirm=yes` in Ansible,
-     `--i-understand` in bash),
-   - prints exactly what it will do and to which hosts before doing it,
-   - supports a dry run (`--check` in Ansible),
-   - runs one host at a time (`serial: 1`) unless told otherwise,
-   - runs a pre-check and a post-check,
-   - has a README section titled "Before you run this on production" that
-     points to `docs/change-requests.md`.
-3. **No real identifiers in the repo.** No IPs, hostnames, ports other than
-   22, DB or schema names, people, email addresses, or employer names.
-   Real values go in gitignored `config.env` / inventory files; the repo
-   ships `*.example` versions. `tools/check-sanitized.sh` enforces this.
-   For example IPs use 192.0.2.x, 198.51.100.x or 203.0.113.x. For example
-   mail addresses use example.com.
-4. **No secrets.** No passwords, keys, tokens. Ansible secrets go in vault
-   files that are gitignored, with a documented example.
-5. Never weaken a check to make a test pass. Flag it instead. The same goes
-   for the two tools in `tools/`: never loosen a pattern to get green.
+Quoted heredoc, thresholds as SQL*Plus substitution variables:
 
-### Code conventions
+```
+sql "temp_warn=$TEMP_WARN" <<'SQL'
+SET HEADING OFF FEEDBACK OFF PAGESIZE 0 VERIFY OFF TAB OFF LINESIZE 1000
+SELECT ... CASE WHEN pct > &temp_warn THEN 'WARN' ... FROM gv$...;
+EXIT
+SQL
+```
 
-- Bash, `#!/bin/bash`, `set -o pipefail`, no `set -e` (one failed check must
-  not stop the rest). Shellcheck clean.
-- Must run on the bash, coreutils and gawk shipped with RHEL 8 and RHEL 9.
-  Tools in `tools/` must also run on Ubuntu (mawk) for CI.
-- Each script runs as a **single self-contained file** plus an optional
-  `config.env` next to it. No shared libraries a fresher has to copy too.
-- Output contract for every check script and playbook:
-  - rows `SECTION|KEY|VALUE|STATUS`
-  - status vocabulary `OK`, `WARN`, `CRIT`, `INFO` and nothing else
-  - unreachable host or failed command = `CRIT`; missing measurement =
-    `WARN`; never `OK` for data you did not get
-  - exit codes: 0 OK, 1 WARN, 2 CRIT, 3 already running, 64 bad usage
-  - flags: `--help`, `--table`, `--html`, `--no-history`, `--mail`,
-    `--mail-if-issues` where they make sense
-- Every external call (ssh, sqlplus, remote scripts) wrapped in `timeout`;
-  ssh uses `-o BatchMode=yes -o ConnectTimeout=10`.
-- Every threshold and host lives in config, never inline.
-- Ansible: FQCN module names, `ansible-lint` clean, no `shell`/`command`
-  where a module exists, `changed_when: false` on every read-only task.
+`sql()` prints each argument as `DEFINE name=value` ahead of the heredoc.
+Keep DEFINE on (never `SET DEFINE OFF`). No literal `&` anywhere else in
+the SQL. Each SELECT emits one line `SECTION|KEY|VALUE|STATUS`.
 
-### Naming
+## Every script supports
 
-- Scripts: `scripts/<area>-<thing>/<thing>.sh`, kebab-case
-  (`scripts/oracle-rac-checklist/checklist.sh`).
+- `--help`, `--version` (`VERSION=` in S01)
+- `--check-config`: loads config, runs detection, prints every value with
+  `[default]`, `[config]`, `[detected]` or `MISMATCH`, the list of checks,
+  and TEST rows for connectivity (sqlplus login, ssh, files). Runs no
+  checks.
+- Default run: aligned table with a SUMMARY row. `--csv` for CSV.
+- Exit codes: 0 OK, 1 WARN, 2 CRIT, 64 bad usage, 65 bad or missing
+  config.
+- Statuses OK, WARN, CRIT, INFO and nothing else. Unreachable host or
+  failed command = CRIT. Missing measurement = WARN. Never OK for data the
+  script did not get.
+- Every external call in `timeout`; ssh with `-o BatchMode=yes -o
+  ConnectTimeout=10`.
+
+## Config
+
+- `config.env` next to the script. `KEY=value` lines only, no quotes, no
+  comments. Values limited to `[A-Za-z0-9_./:,@+-]`; keys ending WARN,
+  CRIT, MAX, SECS, MIN, HRS, DAYS, TIMEOUT, MB, PORT or starting CHECK_
+  must be numbers. Values reach SQL run as SYSDBA, so never loosen this.
+- Detect before asking: GRID_HOME from `/etc/oracle/olr.loc`, ORACLE_SID
+  from `ora_pmon_`, nodes from `olsnodes`, standby destination from
+  `v$archive_dest`. Config overrides detection.
+- A missing required value exits 65 naming the key and
+  `docs/config-from-inventory.md`.
+
+## Verifying a typed file
+
+- `tools/gen-checksums.sh` writes, into each script's README, a whole-file
+  hash and one hash per section: SHA-256, first 12 characters, after
+  deleting carriage returns and blank lines, squeezing runs of spaces and
+  tabs to one space and trimming each line. The fresher's two verify
+  commands in `docs/typing-guide.md` compute exactly the same.
+- After any script change: `tools/gen-checksums.sh`, `tests/make-samples.sh`,
+  and a CHANGELOG entry listing every changed line (section, old line, new
+  line).
+
+## Banned terms
+
+`tools/banned-terms.sha256`: one lowercase SHA-256 per line, committed.
+`tools/check-banned.sh` hashes every token and token part and reports
+file:line only. A missing or empty hash file fails. Never write a banned
+term in plain text anywhere, including commit messages.
+
+## The checks (hook and CI run the same)
+
+`tools/check-all.sh` runs: shellcheck, check-budget, check-no-write,
+check-readonly-sql, check-sanitized, check-banned, sync-shared --check,
+gen-checksums --check. Every check fails loudly; there is no skip path.
+CI also runs gitleaks and the checksum check on RHEL 8 and 9 rebuilds.
+
+## Naming
+
+- Scripts: `scripts/<area>/<name>/<name>.sh`, kebab-case.
 - Branches: `feat/<short>`, `fix/<short>`, `docs/<short>`.
-- Annotations in scripts: `[ADDED]`, `[CHANGED]`, `[FIXED]`, `[REMOVED]`,
-  with a version suffix for later changes (`[CHANGED v2.1]`). Struck-out old
-  lines start `#~` in shell and `--~` in SQL and never execute.
 
-### Writing style for docs ("Stop Slop")
+## Writing style for docs ("Stop Slop")
 
-- No em dashes.
+- No em dashes. No adverbs. No "not X, it's Y". No throat-clearing.
 - Active voice with a human or a named component as the subject.
-- No adverbs.
-- No "not X, it's Y" constructions.
-- No throat-clearing openers ("In this guide we will...").
-- Specific nouns over vague statements.
-- Vary sentence length.
+- Specific nouns. Vary sentence length.
+- Never "simply", "just", "obviously", "easy".
 
-## Before every commit
+## The fresher test (every doc)
 
-The pre-commit hook (`tools/git-hooks/pre-commit`, installed with
-`tools/install-hooks.sh`, documented in `docs/pre-commit-hook.md`) runs
-check-sanitized, check-readonly-sql and gitleaks on staged files. Never
-bypass it with `--no-verify`. Also run shellcheck yourself:
+A fresher knows basic Linux and has never used Oracle. Every command sits
+in its own code block with expected output; one action per step; success
+and failure shown; "if you see X, do Y"; terms linked to the glossary; who
+runs it and on which machine; placeholders `CHANGE_ME_...` with where to
+find the value.
 
-```
-find scripts tools tests -name '*.sh' -print0 | xargs -0 -r shellcheck
-shellcheck tools/git-hooks/pre-commit
-tools/check-readonly-sql.sh
-tools/check-sanitized.sh
-```
+## Definition of done (every script)
 
-`tools/check-sanitized.sh` needs `tools/banned-terms.txt` (gitignored). If it
-is missing, ask the owner. Never create it with guessed words and never
-commit it.
-
-## Definition of done (every script or playbook)
-
-- [ ] Runs from one file plus optional config
-- [ ] Output follows the contract above
-- [ ] README: purpose, prerequisites, setup, run, sample output
-- [ ] RUNBOOK: every possible row, WARN/CRIT actions
-- [ ] Safety statement: exactly what it reads and writes
-- [ ] Tests for healthy, each failure path, and unreachable
-- [ ] shellcheck / ansible-lint clean
-- [ ] check-readonly-sql and check-sanitized pass
-- [ ] A fresher could use it with nothing but the docs
+- [ ] Within the typing budget; shared sections in sync
+- [ ] Output, options and exit codes as above
+- [ ] README: purpose, host, user, what to type, config keys, sample
+      `--check-config`, sample run, checksum table, safety statement
+- [ ] CHANGELOG with line-level edits
+- [ ] RUNBOOK entry for every row it can print
+- [ ] Runs against the stubs; failure paths tried
+- [ ] `tools/check-all.sh` passes

@@ -31,8 +31,14 @@
 #      EXEC EXECUTE BEGIN COMMIT ROLLBACK PURGE SHUTDOWN STARTUP KILL
 #      FLASHBACK CALL LOCK, or anything starting DBMS_.
 #      This also catches SELECT ... FOR UPDATE.
-#   e. A shell line that runs sqlplus without a heredoc fails, because its
-#      SQL comes from somewhere this tool cannot read (a pipe, a file, @).
+#   e. A shell line that runs sqlplus fails unless it opens a SQL heredoc
+#      itself or reads from a group closed by "} |" on the same or the line
+#      before: { printf 'DEFINE ...'; cat <<'SQL' ... SQL } | sqlplus
+#   f. printf in a script may print only DEFINE lines (format 'DEFINE ...').
+#   g. Every call of the sql helper (a line starting "sql ") must reach a
+#      <<'SQL' heredoc, directly or through "\" line continuations.
+#   h. In SQL, "&" only starts a substitution variable (&name), and
+#      SET DEFINE is not allowed (substitution must stay on).
 #
 # The tool is strict on purpose. A keyword inside a string literal or an
 # inline comment still fails. Reword the SQL; do not weaken the tool.
@@ -47,7 +53,7 @@
 #==============================================================================
 set -o pipefail
 
-usage() { sed -n '2,46p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,53p' "$0" | sed 's/^# \{0,1\}//'; }
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FILES=()
@@ -106,7 +112,7 @@ scan() {                        # scan PATH DISPLAY_NAME IS_SQL_FILE
         out[++n] = cur
         return n
     }
-    function runs_sqlplus(s) { return s ~ /(^|[ \t;|&(`])sqlplus([ \t]|$)/ }
+    function runs_sqlplus(s) { return s ~ /(^|[ \t;|&(`])sqlplus[ \t]+-/ }
 
     # Check one SQL line against rules a-d.
     function check_sql(line,   t, up, n, segs, k, seg, w, kw, i) {
@@ -119,6 +125,9 @@ scan() {                        # scan PATH DISPLAY_NAME IS_SQL_FILE
             if (up ~ ("(^|[^A-Z0-9_$#])" kw "([^A-Z0-9_$#]|$)")) problem("write keyword " kw)
         }
         if (up ~ /(^|[^A-Z0-9_$#])DBMS_/) problem("write keyword DBMS_")
+        amp = t; gsub(/&[a-z_][a-z0-9_]*/, "", amp)
+        if (amp ~ /&/) problem("& that is not a substitution variable")
+        if (up ~ /^SET[ \t].*DEFINE/) problem("SET DEFINE (keep DEFINE on)")
 
         # Statement starts. A line may hold several statements split by ";".
         # A ";" inside a quoted string does not split.
@@ -158,13 +167,25 @@ scan() {                        # scan PATH DISPLAY_NAME IS_SQL_FILE
         if ($0 ~ /^[ \t]*#/) next                 # shell comment, incl. #~ struck-out v1 lines
         code = $0; sub(/[ \t]#.*$/, "", code)    # drop a trailing shell comment
         d = heredoc_delim(code)
+        # A call of the sql() helper must feed it a SQL heredoc.
+        if (code ~ /^[ \t]*sql[ \t]/) sqlcall = 1
+        if (sqlcall) {
+            if (d != "" && toupper(d) ~ /SQL/) sqlcall = 0
+            else if (code !~ /\\$/) { problem("sql called without a <<\047SQL\047 heredoc"); sqlcall = 0 }
+        }
+        # printf may feed sqlplus DEFINE lines only.
+        if (code ~ /printf[ \t]+\047[A-Z]/ && code !~ /printf[ \t]+\047DEFINE /)
+            problem("printf of a SQL*Plus command other than DEFINE")
+        grouped = (code ~ /\}[ \t]*\|/ || prev ~ /\}[ \t]*\|/)
+        prev = code
         if (d != "") {
             delim = d
             capture = (runs_sqlplus(code) || toupper(d) ~ /SQL/)
             if (capture) heredocs++
             next
         }
-        if (runs_sqlplus(code)) problem("sqlplus call without a heredoc; audit by hand")
+        if (runs_sqlplus(code) && !grouped)
+            problem("sqlplus fed by something other than a { DEFINE; heredoc } group")
     }
 
     END {

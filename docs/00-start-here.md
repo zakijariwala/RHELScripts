@@ -10,6 +10,7 @@ that phase.
 |---|---|
 | Understand a word I do not know (RAC, ASM, sysdba, playbook...) | [glossary.md](glossary.md) |
 | Check that a script changes nothing before I run it | [safety.md](safety.md) |
+| Commit to this repo without leaking a real name, IP or password | [pre-commit-hook.md](pre-commit-hook.md) |
 | Run anything new on a production server | [change-requests.md](change-requests.md) |
 | Set up the Oracle RAC checklist on a database server | `scripts/oracle-rac-checklist/README.md` *(Phase 1)* |
 | Understand a line in the checklist output | `scripts/oracle-rac-checklist/RUNBOOK.md` *(Phase 1)* |

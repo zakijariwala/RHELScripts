@@ -20,6 +20,7 @@ jobs:
         run: |
           shellcheck --version
           find scripts tools tests -name '*.sh' -print0 | xargs -0 -r shellcheck
+          shellcheck tools/git-hooks/pre-commit
 
   # Both repo tools run on Ubuntu (mawk) and on RHEL 8 / 9 rebuilds (gawk),
   # because fresher-facing scripts must run on the RHEL targets.

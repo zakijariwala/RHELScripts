@@ -80,6 +80,10 @@ server works. You do **not** need Oracle or Ansible for these steps.
    you have no private list of banned words yet. Maintainers create one as
    described in [docs/safety.md](docs/safety.md#the-banned-terms-list).
 
+5. If you will commit to this repo: install the pre-commit hook. It
+   blocks a commit that holds a real IP, a banned name, write SQL or a
+   secret. Follow [docs/pre-commit-hook.md](docs/pre-commit-hook.md).
+
 ## Repo map
 
 ```
@@ -91,6 +95,7 @@ docs/
   glossary.md              every term the docs use (RAC, ASM, FRA, sysdba...)
   reading-output.md        statuses, exit codes, output formats   (Phase 1)
   safety.md                read-only vs action; audit any script yourself
+  pre-commit-hook.md       install the hook that blocks leaks before commit
   offline-install.md       install tools on servers with no internet (Phase 1)
   change-requests.md       change request template for production
   contributing.md          add a new script from scripts/_template (later)
@@ -104,6 +109,8 @@ tests/                     bats tests with fake sqlplus, ssh... (Phase 2)
 tools/
   check-readonly-sql.sh    fails if monitoring SQL holds a write keyword
   check-sanitized.sh       fails on IPs, emails, ports, banned names
+  install-hooks.sh         turns on the pre-commit hook in your clone
+  git-hooks/pre-commit     runs both tools and gitleaks on staged files
   banned-terms.txt.example template for your private banned-words list
 .github/workflows/ci.yml   runs shellcheck, bats, ansible-lint, both tools, gitleaks
 ```

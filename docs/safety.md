@@ -199,7 +199,10 @@ Maintainers run these steps once, as **your user** on **your machine**.
    word itself, because CI logs on a public repo are public. Run
    `tools/check-sanitized.sh --show` on your own machine to see the line.
 
-5. Give CI the same list. In GitHub, open the repo, then **Settings >
+5. Install the pre-commit hook so every commit runs this check on your
+   machine first: [pre-commit-hook.md](pre-commit-hook.md).
+
+6. Give CI the same list. In GitHub, open the repo, then **Settings >
    Secrets and variables > Actions > New repository secret**. Name:
    `BANNED_TERMS`. Value: the contents of your list, one term per line.
    Until this secret exists, CI skips the banned-terms check and shows a

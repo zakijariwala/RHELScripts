@@ -120,10 +120,14 @@ Oracle, RAC, Data Guard, GoldenGate or Ansible.
 
 ## Before every commit
 
-Run all three and fix what they report:
+The pre-commit hook (`tools/git-hooks/pre-commit`, installed with
+`tools/install-hooks.sh`, documented in `docs/pre-commit-hook.md`) runs
+check-sanitized, check-readonly-sql and gitleaks on staged files. Never
+bypass it with `--no-verify`. Also run shellcheck yourself:
 
 ```
 find scripts tools tests -name '*.sh' -print0 | xargs -0 -r shellcheck
+shellcheck tools/git-hooks/pre-commit
 tools/check-readonly-sql.sh
 tools/check-sanitized.sh
 ```

@@ -14,7 +14,7 @@ change, so their hashes stay the same.
 First version. Type the whole file; there is no older typed copy to edit.
 
 Built from `checklist.sh` v2.1 (one script for the whole cluster) under
-[AMENDMENT 01](../../../docs/decisions/AMENDMENT-01.md). Behaviour that
+the design in [FOR-CLAUDE.md](../../../FOR-CLAUDE.md). Behaviour that
 differs from v2.1:
 
 ### Changes common to every script

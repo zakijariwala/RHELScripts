@@ -35,13 +35,14 @@ Where each one runs and in which order to set them up:
 | Repo checks, pre-commit hook, CI | done |
 | Oracle RAC scripts (Phase 1) | done; tested against stubs only, not yet on a real database |
 | bats tests (Phase 2) | planned: [tests/README.md](tests/README.md) |
-| Ansible (Phases 3 and 4) | on hold: [ansible/README.md](ansible/README.md) |
+| Ansible (app and web tiers, prod and DR) | scaffold only: [ansible/README.md](ansible/README.md) |
 
 ## Repo map
 
 ```
 README.md                      this page
-CLAUDE.md                      rules for Claude Code sessions in this repo
+FOR-CLAUDE.md                  design, decisions, progress, agent rules
+CLAUDE.md                      points Claude Code sessions to FOR-CLAUDE.md
 LICENSE                        MIT
 docs/
   00-start-here.md             which page to read for which job
@@ -54,7 +55,6 @@ docs/
   offline-install.md           sysstat without internet (Linux team)
   change-requests.md           change request template for production
   contributing.md              how maintainers change the repo
-  decisions/AMENDMENT-01.md    why the repo works this way
 scripts/oracle-rac/
   README.md                    which script runs where
   RUNBOOK.md                   every output row: meaning and action
@@ -62,6 +62,7 @@ scripts/oracle-rac/
   NAME/NAME.sh                 the script to type
   NAME/README.md               setup, config keys, samples, checksums
   NAME/CHANGELOG.md            line-by-line changes per version
+ansible/                       scaffold: app and web tiers, prod and DR
 tools/                         repo checks (maintainers and CI only)
 tests/                         stubs, fixtures, sample generator
 .githooks/pre-commit           runs tools/check-all.sh on staged files

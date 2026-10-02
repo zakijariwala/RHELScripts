@@ -6,7 +6,7 @@
 #   tools/check-budget.sh            check every scripts/**/*.sh
 #   tools/check-budget.sh FILE...    check these files
 #
-# RULES (CLAUDE.md, "Typing budget")
+# RULES (FOR-CLAUDE.md, 3.4)
 #   - at most 200 lines, at most 80 characters per line
 #   - ASCII only, no tabs, no backticks, no backslash-dollar
 #   - no variable named l, O or I

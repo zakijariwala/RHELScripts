@@ -14,10 +14,12 @@ Every script in `scripts/` is a **monitoring** script. It:
   `test -r`,
 - never starts, stops, kills or restarts anything.
 
-No script in this repo changes state. Actions (reboots, restarts) are on
-hold together with Ansible ([AMENDMENT 01](decisions/AMENDMENT-01.md), D5).
-If one is ever added it lives under `scripts/actions/` and follows the
-guards in [CLAUDE.md](../CLAUDE.md).
+No script in this repo changes state. Actions (reboots, restarts) do not
+exist yet. When they come they live under `scripts/actions/` or
+`ansible/playbooks/actions/`, and each one refuses to run without an
+explicit confirm flag, shows its plan, supports a dry run, works one host
+at a time and checks the host before and after
+([ansible/README.md](../ansible/README.md)).
 
 ## How the repo proves it
 

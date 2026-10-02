@@ -231,8 +231,8 @@ long timeout.
 ## Ansible
 
 ### Ansible
-A tool that runs tasks on many servers over ssh from one machine. On hold
-in this repo ([AMENDMENT 01](decisions/AMENDMENT-01.md)).
+A tool that runs tasks on many servers over ssh from one machine. In this
+repo a scaffold for the app and web tiers ([ansible/README.md](../ansible/README.md)).
 
 ### control node
 The server where Ansible is installed and from where it reaches every

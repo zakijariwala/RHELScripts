@@ -6,7 +6,7 @@ config.env
 
 # Ansible: real inventories and variables, vault files, vault passwords
 ansible/inventory/*
-!ansible/inventory/example.ini
+!ansible/inventory/*.example.ini
 !ansible/inventory/.gitkeep
 ansible/group_vars/*
 !ansible/group_vars/*.example

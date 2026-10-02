@@ -17,8 +17,7 @@ it, so the approvers see the same facts for every change from this repo.
 | Install a package (sysstat) | Yes |
 
 Cron entries and actions (reboots, restarts) do not exist in this repo:
-every run is manual and approved
-([AMENDMENT 01](decisions/AMENDMENT-01.md)).
+every run is manual and approved by a senior.
 
 If you are not sure, raise one. A CR nobody needed costs ten minutes. A
 change nobody approved can cost your job.

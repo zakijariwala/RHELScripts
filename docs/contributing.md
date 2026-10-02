@@ -3,7 +3,7 @@
 The repo changes only through Claude Code sessions run by the repo owner.
 Nobody edits files in the GitHub browser, and nobody clones the repo onto
 a server or a desktop. The rules every session follows are in
-[CLAUDE.md](../CLAUDE.md); this page is the short version.
+[FOR-CLAUDE.md](../FOR-CLAUDE.md); this page is the short version.
 
 ## Every session
 

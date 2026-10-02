@@ -19,7 +19,7 @@ example `TEMP USAGE` in the SQL selects `temp.out`). Set
 
 ## Phase 2 plan (bats tests, not built yet)
 
-Updated by [AMENDMENT 01](../docs/decisions/AMENDMENT-01.md). Every case
+Every case
 runs each affected script through `run-stub.sh` with its own fixture.
 
 **Output and exit codes**

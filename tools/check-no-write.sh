@@ -6,7 +6,7 @@
 #   tools/check-no-write.sh            check every scripts/**/*.sh
 #   tools/check-no-write.sh FILE...    check these files
 #
-# RULES (CLAUDE.md, "Scripts write nothing")
+# RULES (FOR-CLAUDE.md, 3.3)
 #   Shell code, outside heredoc bodies and outside quoted strings:
 #     a. no ">" or ">>" except to /dev/null or to another descriptor (>&2)
 #     b. no exec N>file

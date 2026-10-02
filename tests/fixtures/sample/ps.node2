@@ -1,0 +1,17 @@
+/usr/lib/systemd/systemd --switched-root --system
+/usr/sbin/crond -n
+/usr/sbin/chronyd
+/usr/sbin/sshd -D
+/u01/app/19.0.0/grid/bin/ohasd.bin reboot
+/u01/app/19.0.0/grid/bin/ocssd.bin
+/u01/app/19.0.0/grid/bin/crsd.bin reboot
+/u01/app/19.0.0/grid/bin/evmd.bin
+/u01/app/19.0.0/grid/bin/gpnpd.bin
+/u01/app/19.0.0/grid/bin/gipcd.bin
+/u01/app/19.0.0/grid/bin/mdnsd.bin
+/u01/app/19.0.0/grid/bin/octssd.bin reboot
+/u01/app/19.0.0/grid/bin/osysmond.bin
+asm_pmon_+ASM2
+ora_pmon_DEMODB2
+/u01/app/19.0.0/grid/bin/tnslsnr LISTENER -no_crs_notify -inherit
+/u01/app/19.0.0/grid/bin/tnslsnr LISTENER_SCAN1 -no_crs_notify -inherit

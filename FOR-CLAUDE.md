@@ -62,7 +62,8 @@ docs/                    fresher docs (start-here, typing guide, config
 scripts/oracle-rac/      database-cluster scripts, typed on node 1
   README.md RUNBOOK.md HOW-IT-WORKS.md
   NAME/NAME.sh NAME/README.md NAME/CHANGELOG.md
-scripts/linux/           per-host scripts for any RHEL server (same rules)
+scripts/linux/           per-host scripts for any RHEL server, RUNBOOK.md
+  NAME/NAME.sh NAME/README.md NAME/CHANGELOG.md
 ansible/                 scaffold only (section 3.10)
 tools/                   repo checks, shared-section masters, hash list
 tests/                   stubs, fixtures, run-stub.sh, make-samples.sh
@@ -72,18 +73,34 @@ tests/                   stubs, fixtures, run-stub.sh, make-samples.sh
 
 ### 3.2 Scripts
 
-| Script | Runs on, as | Checks |
-|---|---|---|
-| oracle-rac/db-check | node 1, oracle | open mode, log mode, instances and uptime, app-schema sessions, process/session limits, blocking, long calls |
-| oracle-rac/space-check | node 1, oracle | TEMP and top consumer, 5 fullest tablespaces, ASM diskgroups |
-| oracle-rac/dr-check | node 1 of the primary, oracle | archive destinations, standby destination, Data Guard gap and lag |
-| oracle-rac/backup-check | node 1, oracle | FRA, RMAN backup age, failed jobs |
-| oracle-rac/node-check | node 1, oracle; other nodes over ssh | CPU, memory, swap, load, filesystems, alert log ORA- per node |
-| oracle-rac/crs-check | node 1, oracle | Clusterware resources TARGET vs STATE |
-| oracle-rac/gg-check | node 1, oracle; GG host over ssh | GoldenGate extracts: status, lag, checkpoint age |
-| oracle-rac/inputs-check | node 1, oracle | sftp_output, server_checklist, activesession.sh, freshness |
+Database cluster, `scripts/oracle-rac/`, all typed and run on node 1 as
+oracle:
 
-Section 5 lists scripts in progress.
+| Script | Checks |
+|---|---|
+| db-check | open mode, log mode, instances and uptime, app-schema sessions, process/session limits, blocking, long calls |
+| space-check | TEMP and top consumer, 5 fullest tablespaces, ASM diskgroups |
+| dr-check | archive destinations, standby destination, Data Guard gap and lag (run on the primary) |
+| backup-check | FRA, RMAN backup age, failed jobs |
+| node-check | CPU, memory, swap, load, filesystems, alert log ORA-, every node over ssh |
+| crs-check | Clusterware resources TARGET vs STATE |
+| proc-check | per node over ssh: ora_pmon instances, asm_pmon, each LISTENERS name, each CRS daemon named |
+| gg-check | GoldenGate extracts via gg2.sh on the GG host over ssh |
+| inputs-check | sftp_output, server_checklist, activesession.sh, freshness |
+
+Any RHEL server, `scripts/linux/`, typed and run on each server it checks
+(DB nodes as oracle, app/web as the login user, no root, no ssh):
+
+| Script | Checks |
+|---|---|
+| host-check | running vs newest kernel-core, needs-restarting, chrony leap and offset, PROCS by exact name (pgrep -xc), failed systemd units, kdump, kernel log err+ |
+| disk-check | space and inode use per mount, read-only local fs (/proc/mounts), SCSI path state (/sys), multipath running paths vs MPATH_MIN |
+| hw-check | bonding slaves (/proc/net/bonding), HugePages, transparent hugepages (CHECK_HUGEPAGES=0 on app/web) |
+
+`PROC_DIR` and `SYS_DIR` exist so tests can point at fixture trees;
+production leaves the defaults. Site agent names never appear as
+defaults: `PROCS` defaults to `crond,chronyd,sshd` and the site adds its
+agents in config.env.
 
 ### 3.3 Script contract
 
@@ -224,7 +241,8 @@ exists. ansible-lint joins check-all with the first playbook.
 | Quoted heredoc + DEFINE | no `\$` escapes to type; thresholds stay out of the SQL text |
 | Hash after squeezing spaces (not deleting them) | deleting all spaces hides typos such as `[-z` for `[ -z` |
 | Banned names as hashes | the list must be committed and checked in CI without publishing it |
-| node-check and gg-check use ssh from node 1 | the fresher types everything on node 1 only |
+| node-check, proc-check and gg-check use ssh from node 1 | the fresher types the database scripts on node 1 only |
+| Linux host scripts run locally on each server, no ssh | they serve app and web servers too, and Ansible will run them per host later |
 | dr-check: STANDBY_DEST (number, none, blank=auto) | replaces the CHECK_DG toggle; detects and flags mismatches |
 | gitleaks in CI only, not in the hook | a fresh session needs no gitleaks binary |
 | Ansible back as scaffold; DB cluster stays manual | app/web tiers have control nodes; DB scripts stay typed |
@@ -240,35 +258,21 @@ CRIT row.
 | Phase | State |
 |---|---|
 | 0 Scaffold, tools, CI | done |
-| 1 Oracle RAC scripts (8) | done; stub-tested only, never on a real database |
-| 1b Host scripts from the old host-health script | in progress (below) |
+| 1 Oracle RAC scripts (9) | done; stub-tested only, never on a real database |
+| 1b Linux host scripts (3) | done; rebuilt from the owner's old host-health script; stub-tested only |
 | 2 bats tests | planned; list in tests/README.md |
 | 3 Ansible | scaffold done; playbooks wait for owner's configuration |
 | 4 Ansible actions | not started |
 
-**In progress: host-health rework.** The owner's old per-node script
-(colours and emoji, kernel version, device count, df over 70%, ntpstat,
-pgrep of site agents, hardcoded SID pmon, any tnslsnr, nine CRS daemons
-ANDed together) is being rebuilt under the rules above as:
-
-- `scripts/linux/host-check`: any RHEL host. Pending reboot (running vs
-  newest kernel, needs-restarting), chrony sync and offset, configured
-  processes by exact name, failed systemd units, inode use, read-only
-  filesystems, kdump, kernel log errors.
-- `scripts/linux/storage-check`: any RHEL host. SCSI path states and
-  multipath path counts from /sys, bonding slaves from /proc/net/bonding,
-  HugePages and transparent hugepages.
-- `scripts/oracle-rac/proc-check`: each DB node. pmon per instance, ASM
-  pmon, local listener (not SCAN), each Clusterware daemon named.
-
-Fixes it carries from the review: `df -P`, no temp file, exact process
-names, no hardcoded SID, local listener only, chrony offset, PackageKit
-dropped, pending reboot detected, missing CRS daemon named, ASM checked,
-no colour codes, summary and exit code.
+The old host-health script (colours and emoji, uname as "latest kernel",
+`df -h` without `-P`, a temp file in the current folder, substring
+`pgrep`, a hardcoded SID, any `tnslsnr`, nine CRS daemons ANDed, ntpstat,
+PackageKit as required) became host-check, disk-check, hw-check and
+proc-check. Its SID is in the banned-term hashes.
 
 **Open with the owner:**
 1. Banned-term hashes: only the owner's names and one SID are listed;
-   employer, hosts, databases, schemas still missing.
+   employer, hosts, databases, schemas, agent product names still missing.
 2. Inventory sheet and column names in docs/config-from-inventory.md are
    `CHANGE_ME_` placeholders.
 3. Typing load ~1,400 lines for the DB scripts; copying a verified shared
@@ -281,6 +285,10 @@ no colour codes, summary and exit code.
    from pmon environ for remote alert log, gv$ counts on 19c.
 7. Ansible: versions, privilege model, become, transfer path to control
    nodes, vault location, DR control nodes reaching production.
+8. Linux scripts on app/web servers: which login user runs them, and
+   whether that user may join `systemd-journal` (else KERNEL LOG is WARN).
+9. A single SCSI path offline rates WARN (MULTIPATH carries the CRIT when
+   no path is left); confirm.
 
 **Backlog (do not build unprompted):** optional mail script, least-
 privilege monitoring DB user guide, Splunk ingestion guide, GG manager/

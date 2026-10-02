@@ -12,6 +12,7 @@ session to the server.
 | Script | Server | User | Folder |
 |---|---|---|---|
 | every script in `scripts/oracle-rac/` | node 1 | oracle | `/home/oracle/scripts/oracle-rac/<script name>` |
+| every script in `scripts/linux/` | each server it checks | oracle on database nodes, your own login elsewhere | `$HOME/scripts/linux/<script name>` |
 
 Each script's README repeats this in its first table.
 

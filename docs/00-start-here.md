@@ -8,11 +8,12 @@ exact with hashes, configure it, get a senior's approval, then run it.
 
 | Job | Read |
 |---|---|
-| See which scripts exist and where each one runs | [scripts/oracle-rac/README.md](../scripts/oracle-rac/README.md) |
+| See which database scripts exist and where each one runs | [scripts/oracle-rac/README.md](../scripts/oracle-rac/README.md) |
+| See the scripts for any RHEL server (database, app, web) | [scripts/linux/README.md](../scripts/linux/README.md) |
 | Type a script on a server and prove it is exact | [typing-guide.md](typing-guide.md) |
 | Fill in config.env from the inventory sheet | [config-from-inventory.md](config-from-inventory.md) |
 | Get a senior's approval before a run | [approval-checklist.md](approval-checklist.md) |
-| Understand a row in the output | [scripts/oracle-rac/RUNBOOK.md](../scripts/oracle-rac/RUNBOOK.md) |
+| Understand a row in the output | [oracle-rac RUNBOOK](../scripts/oracle-rac/RUNBOOK.md), [linux RUNBOOK](../scripts/linux/RUNBOOK.md) |
 | Know what OK, WARN, CRIT, INFO and the exit codes mean | [reading-output.md](reading-output.md) |
 | Check that a script changes nothing | [safety.md](safety.md) |
 | Understand a word I do not know (RAC, ASM, sysdba...) | [glossary.md](glossary.md) |
@@ -39,7 +40,8 @@ exact with hashes, configure it, get a senior's approval, then run it.
 
 | Name in the docs | What it is |
 |---|---|
-| **node 1**, **node 2** | The two database servers of an Oracle RAC cluster. See [RAC](glossary.md#rac). Every script is typed and run on node 1. |
+| **node 1**, **node 2** | The two database servers of an Oracle RAC cluster. See [RAC](glossary.md#rac). Every database script is typed and run on node 1. |
+| **app1 to app10**, **web1 to web4** | The app and web servers, mirrored on the DR site. The Linux host scripts run on each of them. |
 | **GoldenGate host** | The server that runs GoldenGate and `gg2.sh`. `gg-check.sh` reaches it over ssh from node 1. |
 | **root** | The Linux superuser. You do not need it for any script here. |
 | **oracle** | The Linux user that owns the Oracle software. You become it with `sudo -iu oracle`. |

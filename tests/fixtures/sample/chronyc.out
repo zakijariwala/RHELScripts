@@ -1,0 +1,6 @@
+Reference ID    : C0000201 (192.0.2.1)
+Stratum         : 3
+Ref time (UTC)  : Fri Oct 02 19:58:12 2026
+System time     : 0.000041210 seconds fast of NTP time
+Last offset     : +0.000012345 seconds
+Leap status     : Normal

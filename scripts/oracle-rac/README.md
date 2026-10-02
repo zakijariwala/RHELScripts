@@ -1,6 +1,6 @@
 # Oracle RAC scripts
 
-Eight small read-only scripts that together check a two-node Oracle
+Nine small read-only scripts that together check a two-node Oracle
 [RAC](../../docs/glossary.md#rac) cluster. They replace `checklist.sh`
 v2.1. Each one does one job, fits on a few screens, and is typed by hand on
 the server from this page (see [docs/typing-guide.md](../../docs/typing-guide.md)).
@@ -21,11 +21,12 @@ All of them run as **oracle**. Each lives in its own folder under
 | [backup-check.sh](backup-check/) | node 1 | Fast Recovery Area, RMAN backup age | yes | with `CHECK_RMAN=0` if no backups |
 | [node-check.sh](node-check/) | node 1 (reaches the other nodes over ssh) | CPU, memory, swap, load, filesystems, alert log, on every node | yes | yes |
 | [crs-check.sh](crs-check/) | node 1 | Clusterware resources | yes | yes |
+| [proc-check.sh](proc-check/) | node 1 (reaches the other nodes over ssh) | instance, ASM, listener and Clusterware processes, on every node | yes | yes |
 | [gg-check.sh](gg-check/) | node 1 (reaches the GoldenGate host over ssh) | GoldenGate extracts | yes | **no**, pre-production has no GoldenGate |
 | [inputs-check.sh](inputs-check/) | node 1 | sftp log size, active session peaks, app servers | yes | if the input files exist |
 
-Everything is typed and run on node 1 only. `node-check.sh` and
-`gg-check.sh` need passwordless ssh as oracle from node 1 to the other
+Everything is typed and run on node 1 only. `node-check.sh`,
+`proc-check.sh` and `gg-check.sh` need passwordless ssh as oracle from node 1 to the other
 nodes and to the GoldenGate host.
 
 ## The order to work in
@@ -44,6 +45,10 @@ For each script, one at a time:
 
 Start with `db-check.sh`: it is the one most likely to find a real
 problem, and it proves sqlplus works.
+
+The general server checks (reboot pending, time sync, disks, bonding,
+HugePages) are in [scripts/linux/](../linux/README.md); type them on every
+node too.
 
 ## Pages in this folder
 

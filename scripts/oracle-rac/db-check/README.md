@@ -122,7 +122,7 @@ CONFIG   LONG_QUERY_SKIP                              SYS,SYSTEM,GGADMIN [defaul
 CONFIG   SQL_TIMEOUT                                  300 [default]                                                           INFO
 CONFIG   checks                                       open mode, log mode, instances, sessions, limits, blocking, long calls  INFO
 TEST     login, APP_USER exists                       APPUSER                                                                 OK
-SUMMARY  racnode1 db-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=1                                                      OK
+SUMMARY  racnode1 db-check 1.0.0 2026-10-02 23:39:16  CRIT=0 WARN=0 OK=1                                                      OK
 ```
 <!-- sample:check-config:end -->
 
@@ -165,7 +165,7 @@ SESSION LIMIT    Inst 2 processes                             598 of 1500       
 SESSION LIMIT    Inst 2 sessions                              640 of 2272          OK
 BLOCKING         Sessions blocked > 300s                      0                    OK
 LONG CALLS       Active calls > 1800s                         0                    OK
-SUMMARY          racnode1 db-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=16  OK
+SUMMARY          racnode1 db-check 1.0.0 2026-10-02 23:39:17  CRIT=0 WARN=0 OK=16  OK
 ```
 <!-- sample:run:end -->
 

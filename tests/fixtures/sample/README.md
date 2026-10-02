@@ -21,4 +21,9 @@ findings so the samples show more than OK:
 | `gg2.out` | `gg2.sh`; `@CKPT@` becomes a time one minute ago |
 | `activesession.out` | `activesession.sh` |
 | `sftp_output`, `server_checklist` | the two input files |
+| `ps.nodeN` | process command lines per node (ps, pgrep, proc-check) |
+| `uname.out`, `rpm.out`, `chronyc.out`, `journalctl.out` | host-check commands |
+| `systemctl-failed.out`, `systemctl-active.out`, `id-groups.out` | host-check systemd and group lookups |
+| `df-i.node1` | `df -i` for disk-check |
+| `proc/`, `sys/` | fake `/proc` and `/sys`: mounts, meminfo, bonding, block devices, transparent hugepages |
 | `config/NAME.env` | the config.env each script gets; `@GRID@`, `@WORK@`, `@STUBS@` are filled in |

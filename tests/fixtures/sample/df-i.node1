@@ -1,0 +1,5 @@
+Filesystem                   Inodes  IUsed    IFree IUse% Mounted on
+/dev/mapper/rootvg-root    10485760  98312 10387448    1% /
+/dev/sda1                    524288    350   523938    1% /boot
+/dev/mapper/rootvg-var      5242880 241210  5001670    5% /var
+/dev/mapper/u01vg-u01      52428800 4410322 48018478   9% /u01

@@ -110,7 +110,7 @@ CONFIG   ARCH_BACKUP_MAX_HRS                              6 [default]           
 CONFIG   SQL_TIMEOUT                                      300 [default]                                                       INFO
 CONFIG   checks                                           FRA used percent, last DB backup, last archivelog backup, failures  INFO
 TEST     sqlplus login                                    DEMODB1 OPEN                                                        OK
-SUMMARY  racnode1 backup-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=1                                                  OK
+SUMMARY  racnode1 backup-check 1.0.0 2026-10-02 23:39:16  CRIT=0 WARN=0 OK=1                                                  OK
 ```
 <!-- sample:check-config:end -->
 
@@ -140,7 +140,7 @@ FRA USAGE    +FRA                                             Used=41.22% of 204
 RMAN BACKUP  Last DB backup (full/incr)                       01-10-2026 23:40      OK
 RMAN BACKUP  Last archivelog backup                           02-10-2026 18:05      OK
 RMAN BACKUP  Failed jobs (24h)                                0                     OK
-SUMMARY      racnode1 backup-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=4    OK
+SUMMARY      racnode1 backup-check 1.0.0 2026-10-02 23:39:16  CRIT=0 WARN=0 OK=4    OK
 ```
 <!-- sample:run:end -->
 

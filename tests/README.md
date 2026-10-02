@@ -5,8 +5,9 @@ Fake versions of the server commands stand in for the real ones.
 
 | Path | What it is |
 |---|---|
-| `stubs/bin/` | fake `sqlplus`, `ssh`, `sar`, `free`, `df`, `ps`, `nproc`, `hostname` |
+| `stubs/bin/` | fake `sqlplus`, `ssh`, `sar`, `free`, `df`, `ps`, `pgrep`, `nproc`, `hostname`, `uname`, `rpm`, `needs-restarting`, `chronyc`, `systemctl`, `journalctl`, `id` |
 | `stubs/grid/bin/` | fake `crsctl` and `olsnodes`, used as `GRID_HOME` |
+| `fixtures/sample/proc/`, `fixtures/sample/sys/` | fake `/proc` and `/sys` trees for disk-check and hw-check (`PROC_DIR`, `SYS_DIR`) |
 | `stubs/activesession.sh` | fake `activesession.sh` |
 | `fixtures/sample/` | canned output for each fake command: a healthy cluster with a few WARN rows |
 | `fixtures/sample/config/` | the `config.env` each script gets in a stub run |
@@ -63,6 +64,18 @@ runs each affected script through `run-stub.sh` with its own fixture.
 **inputs-check**
 - Stale file, missing file, unparsed line, producer status not Normal,
   inaccessible app servers, `activesession.sh` failure.
+
+**Linux host scripts and proc-check**
+- host-check: kernel newer than running, needs-restarting reboot, chrony
+  not synchronised, offset over WARN and CRIT, chronyc missing, process
+  missing, failed unit, kdump inactive, kernel log errors, journal not
+  readable.
+- disk-check: space and inodes over limits, read-only mount, SCSI path
+  offline, multipath with one path and with none.
+- hw-check: bond slave down, bond down, no HugePages, transparent
+  hugepages not never, CHECK_HUGEPAGES=0.
+- proc-check: no pmon, no ASM, local listener missing, CRS daemon missing,
+  node unreachable.
 
 **Rules and tools**
 - No-write rule: a run writes no file anywhere (compare file lists before

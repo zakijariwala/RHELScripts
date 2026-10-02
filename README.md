@@ -1,6 +1,7 @@
 # RHELScripts
 
-Read-only monitoring scripts for Oracle RAC clusters on RHEL 8 and 9.
+Read-only monitoring scripts for Oracle RAC clusters and RHEL 8 and 9
+servers.
 Each script checks one area, prints an aligned table with a status per row
 (OK, WARN, CRIT, INFO) and a summary, and exits 0, 1 or 2. None of them
 writes anything.
@@ -24,6 +25,15 @@ senior first.
 | [crs-check.sh](scripts/oracle-rac/crs-check/) | Clusterware resources |
 | [gg-check.sh](scripts/oracle-rac/gg-check/) | GoldenGate extracts |
 | [inputs-check.sh](scripts/oracle-rac/inputs-check/) | sftp log, active sessions, app servers |
+| [proc-check.sh](scripts/oracle-rac/proc-check/) | instance, ASM, listener and Clusterware processes on every node |
+
+For every RHEL server (database, app and web, production and DR):
+
+| Script | Checks |
+|---|---|
+| [host-check.sh](scripts/linux/host-check/) | pending reboot, time sync, processes, systemd units, kdump, kernel log |
+| [disk-check.sh](scripts/linux/disk-check/) | space and inodes, read-only filesystems, SCSI and multipath paths |
+| [hw-check.sh](scripts/linux/hw-check/) | bonding, HugePages |
 
 Where each one runs and in which order to set them up:
 [scripts/oracle-rac/README.md](scripts/oracle-rac/README.md).
@@ -34,6 +44,7 @@ Where each one runs and in which order to set them up:
 |---|---|
 | Repo checks, pre-commit hook, CI | done |
 | Oracle RAC scripts (Phase 1) | done; tested against stubs only, not yet on a real database |
+| Linux host scripts and proc-check | done; tested against stubs only |
 | bats tests (Phase 2) | planned: [tests/README.md](tests/README.md) |
 | Ansible (app and web tiers, prod and DR) | scaffold only: [ansible/README.md](ansible/README.md) |
 
@@ -62,6 +73,7 @@ scripts/oracle-rac/
   NAME/NAME.sh                 the script to type
   NAME/README.md               setup, config keys, samples, checksums
   NAME/CHANGELOG.md            line-by-line changes per version
+scripts/linux/                 host, disk and hardware checks for any RHEL server
 ansible/                       scaffold: app and web tiers, prod and DR
 tools/                         repo checks (maintainers and CI only)
 tests/                         stubs, fixtures, sample generator

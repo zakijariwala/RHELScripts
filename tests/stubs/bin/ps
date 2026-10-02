@@ -1,7 +1,10 @@
 #!/bin/bash
-# Stub ps. Lists the pmon processes of node STUB_NODE (default 1).
-n=${STUB_NODE:-1}
+# Stub ps. Prints the process list of node STUB_NODE (default 1) from
+# $STUB_FIXTURES/ps.nodeN (one command line per process), in the form
+# the scripts ask for: args=, comm=, or pid=,args=.
+f="$STUB_FIXTURES/ps.node${STUB_NODE:-1}"
 case "$*" in
-    *pid*) printf ' 4242 ora_pmon_DEMODB%s\n 4100 asm_pmon_+ASM%s\n' "$n" "$n" ;;
-    *)     printf 'ora_pmon_DEMODB%s\nasm_pmon_+ASM%s\n' "$n" "$n" ;;
+    *pid=*) awk '{ print 4000 + NR, $0 }' "$f" ;;
+    *comm=*) awk '{ n = split($1, p, "/"); print p[n] }' "$f" ;;
+    *) cat "$f" ;;
 esac

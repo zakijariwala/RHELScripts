@@ -1,0 +1,8 @@
+#!/bin/bash
+# Stub pgrep. Supports "pgrep -xc NAME": counts processes of node
+# STUB_NODE whose command name is exactly NAME, from ps.nodeN.
+name="${!#}"
+n=$(awk -v w="$name" '{ k = split($1, p, "/"); if (p[k] == w) c++ }
+    END { print c + 0 }' "$STUB_FIXTURES/ps.node${STUB_NODE:-1}")
+echo "$n"
+[ "$n" -gt 0 ]

@@ -100,7 +100,7 @@ CONFIG   GRID_HOME                                     /u01/app/19.0.0/grid [con
 CONFIG   CRS_TIMEOUT                                   60 [default]                                                INFO
 CONFIG   checks                                        every resource in crsctl stat res -t: TARGET against STATE  INFO
 TEST     crsctl                                        found in /u01/app/19.0.0/grid/bin                           OK
-SUMMARY  racnode1 crs-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=1                                          OK
+SUMMARY  racnode1 crs-check 1.0.0 2026-10-02 23:39:16  CRIT=0 WARN=0 OK=1                                          OK
 ```
 <!-- sample:check-config:end -->
 
@@ -127,7 +127,7 @@ Sample output (from a test run against fake data):
 ```
 SECTION      KEY                                           VALUE               STATUS
 CLUSTERWARE  Resources with TARGET=ONLINE                  all ONLINE          OK
-SUMMARY      racnode1 crs-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=1  OK
+SUMMARY      racnode1 crs-check 1.0.0 2026-10-02 23:39:16  CRIT=0 WARN=0 OK=1  OK
 ```
 <!-- sample:run:end -->
 

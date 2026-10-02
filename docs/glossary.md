@@ -12,6 +12,15 @@ this repo.
 Reads a script and reports syntax errors without running anything:
 `bash -n db-check.sh`. Part of checking a typed copy.
 
+### bonding
+Two or more network ports joined into one interface (`bond0`), so one
+cable or switch port can fail without losing the network. Each port is a
+**slave**. `hw-check.sh` checks them.
+
+### chrony
+The time service on RHEL 8 and 9 (`chronyd`). `chronyc tracking` shows
+how far the clock is from its source.
+
 ### config.env
 The settings file you type next to a script on the server: `KEY=value`
 lines, no quotes, no comments. It holds real names, so it never enters the
@@ -37,10 +46,27 @@ starts with `<<'SQL'` and ends at a line holding only `SQL`. The quotes
 around the first `SQL` tell bash to leave the text alone, so `$` needs no
 escaping. The scripts send their SQL to sqlplus this way.
 
+### HugePages
+Large memory pages (2 MB instead of 4 kB). Oracle keeps its shared memory
+in them. **Transparent hugepages** are a different, automatic feature that
+Oracle advises turning off.
+
+### inode
+The record a filesystem keeps for each file. A filesystem can run out of
+inodes while it still has free space; then no new file can be created.
+
+### kdump
+A service that saves memory to disk when the kernel crashes, so the cause
+can be found afterwards.
+
 ### load average
 The number of processes running or waiting for CPU, averaged over 1, 5
 and 15 minutes (`/proc/loadavg`). Divided by the number of cores, above 1
 means work queues for CPU.
+
+### multipath
+A SAN disk reached over several cables and switch ports (**paths**).
+Each path shows up as an `sd` device; the combined disk is `mpathX`.
 
 ### passwordless ssh
 ssh login with a key pair instead of a password. The private key stays in
@@ -69,6 +95,10 @@ numbers.
 ### swap
 Disk space Linux uses as overflow memory. A database server that swaps
 slows down, because disk is far slower than memory.
+
+### systemd unit
+A service, mount or timer that systemd manages (`crond.service`). A
+**failed** unit stopped with an error.
 
 ### timeout
 A command that runs another command and kills it after a set number of

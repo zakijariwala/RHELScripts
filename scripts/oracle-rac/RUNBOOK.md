@@ -52,6 +52,9 @@ sqlplus -s / as sysdba <<< "SELECT ... FROM v\$something;"
 [RMAN BACKUP](#rman-backup) ·
 [ALERT LOG](#alert-log) ·
 [CLUSTERWARE](#clusterware) ·
+[DB PROCESS](#db-process) ·
+[LISTENER](#listener) ·
+[CRS PROCESS](#crs-process) ·
 [OS UTILIZATION](#os-utilization) ·
 [FILESYSTEM](#filesystem) ·
 [GOLDENGATE](#goldengate) ·
@@ -568,6 +571,72 @@ ps -ef | grep -c '[o]hasd'
 ```
 
 `0` means the Clusterware stack is down on node 1. Call the on-call DBA.
+
+## DB PROCESS
+
+`proc-check`, rows per node.
+
+| KEY | VALUE | STATUS |
+|---|---|---|
+| node and `pmon`, for example `racnode1 pmon` | instance names, for example `DEMODB1` | OK |
+| | `no ora_pmon process` | CRIT |
+| node and `asm` | `+ASM1` | OK |
+| | `no asm_pmon process` | CRIT |
+| node | `NO DATA, unreachable or failed, rc=N` | CRIT |
+
+Absent `asm` rows when `CHECK_ASM=0`.
+
+**Meaning.** Each running database instance has a process `ora_pmon_<SID>`,
+each ASM instance `asm_pmon_<SID>`. No such process means the instance is
+down on that node. A running process does not prove the instance is
+healthy: `db-check.sh` and `crs-check.sh` tell you that.
+
+**CRIT (no pmon).** Run `crs-check.sh` and `db-check.sh`. Call the on-call
+DBA.
+
+**CRIT (no ASM).** Without ASM the database on that node cannot reach its
+files. Call the on-call DBA.
+
+**CRIT (NO DATA).** As in [OS UTILIZATION](#os-utilization): rc=255 ssh
+failed, rc=124 it hung.
+
+## LISTENER
+
+`proc-check`, rows per node.
+
+| KEY | VALUE | STATUS |
+|---|---|---|
+| node and listener name, for example `racnode1 LISTENER` | `running` | OK |
+| | `not running` | CRIT |
+| node and `others` | other listeners on the node, for example `LISTENER_SCAN2` | INFO |
+
+**Meaning.** Each name in `LISTENERS` (default `LISTENER`, the node's own
+listener) must run on every node. SCAN listeners move between nodes and
+show as INFO only.
+
+**CRIT.** New connections to that node fail. Call the on-call DBA. To see
+its state, as oracle on that node:
+
+```
+lsnrctl status LISTENER
+```
+
+## CRS PROCESS
+
+`proc-check`, one row per node.
+
+| KEY | VALUE | STATUS |
+|---|---|---|
+| node | `all running` | OK |
+| | `not running: crsd.bin ...` | CRIT |
+
+**Meaning.** The Clusterware daemons in `CRS_DAEMONS` (ohasd, ocssd, crsd,
+evmd, gpnpd, gipcd, mdnsd, octssd, osysmond) must run on every node. The
+row names each one missing.
+
+**CRIT.** Call the on-call DBA with the row. `ocssd.bin` or `ohasd.bin`
+missing means the node has left the cluster. Run `crs-check.sh` for the
+resource view.
 
 ## OS UTILIZATION
 

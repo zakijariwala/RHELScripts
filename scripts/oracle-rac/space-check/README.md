@@ -112,7 +112,7 @@ CONFIG   ASM_CRIT                                        90 [default]           
 CONFIG   SQL_TIMEOUT                                     300 [default]                                                   INFO
 CONFIG   checks                                          TEMP, top TEMP consumer, 5 fullest tablespaces, ASM diskgroups  INFO
 TEST     sqlplus login                                   DEMODB1 OPEN                                                    OK
-SUMMARY  racnode1 space-check 1.0.0 2026-10-02 20:18:53  CRIT=0 WARN=0 OK=1                                              OK
+SUMMARY  racnode1 space-check 1.0.0 2026-10-02 23:39:18  CRIT=0 WARN=0 OK=1                                              OK
 ```
 <!-- sample:check-config:end -->
 
@@ -148,7 +148,7 @@ TABLESPACE USAGE  USERS                                           Used=0.10% of 
 ASM DISKGROUP     DATA                                            Used=71.80%, usable free 1410G                         OK
 ASM DISKGROUP     FRA                                             Used=43.10%, usable free 1162G                         OK
 ASM DISKGROUP     OCR                                             Used=8.20%, usable free 3G                             OK
-SUMMARY           racnode1 space-check 1.0.0 2026-10-02 20:18:53  CRIT=0 WARN=2 OK=7                                     WARN
+SUMMARY           racnode1 space-check 1.0.0 2026-10-02 23:39:18  CRIT=0 WARN=2 OK=7                                     WARN
 ```
 <!-- sample:run:end -->
 

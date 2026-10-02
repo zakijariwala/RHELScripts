@@ -1,0 +1,7 @@
+#!/bin/bash
+# Stub id. -u prints 1001; -Gn prints the groups in id-groups.out.
+case "$1" in
+    -u) echo 1001 ;;
+    -Gn) cat "$STUB_FIXTURES/id-groups.out" ;;
+    *) echo "uid=1001(oracle)" ;;
+esac

@@ -1,0 +1,4 @@
+#!/bin/bash
+# Stub rpm. Prints $STUB_FIXTURES/rpm.out; exits with rpm.rc if present.
+cat "$STUB_FIXTURES/rpm.out" 2>/dev/null
+exit "$(cat "$STUB_FIXTURES/rpm.rc" 2>/dev/null || echo 0)"

@@ -110,7 +110,7 @@ CONFIG   checks                                           sftp_output, activeses
 TEST     /home/oracle/sftp_output                         readable                                                         OK
 TEST     /home/oracle/server_checklist                    readable                                                         OK
 TEST     /home/oracle/scripts/activesession.sh            readable                                                         OK
-SUMMARY  racnode1 inputs-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=3                                               OK
+SUMMARY  racnode1 inputs-check 1.0.0 2026-10-02 23:39:17  CRIT=0 WARN=0 OK=3                                               OK
 ```
 <!-- sample:check-config:end -->
 
@@ -139,7 +139,7 @@ SECTION          KEY                                              VALUE         
 SFTP LOG         /var/log/sftp.log                                size 1003M, modified Oct 2 23:50, producer says: Normal             OK
 ACTIVE SESSIONS  Last 2h (2151 - 2351)                            highest 2331 --> 20 rows [NORMAL], lowest 2200 --> 6 rows [NORMAL]  OK
 APP SERVERS      Accessible                                       9 of 9, inaccessible 0                                              OK
-SUMMARY          racnode1 inputs-check 1.0.0 2026-10-02 20:18:53  CRIT=0 WARN=0 OK=3                                                  OK
+SUMMARY          racnode1 inputs-check 1.0.0 2026-10-02 23:39:17  CRIT=0 WARN=0 OK=3                                                  OK
 ```
 <!-- sample:run:end -->
 

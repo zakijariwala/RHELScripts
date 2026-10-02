@@ -25,7 +25,7 @@ fill() {                        # fill README TAG TEXT
         !skip { print }' "$1" > "$1.new" && mv "$1.new" "$1"
 }
 
-for dir in "$REPO"/scripts/oracle-rac/*/; do
+for dir in "$REPO"/scripts/*/*/; do
     name=$(basename "$dir")
     [ -f "$dir/$name.sh" ] || continue
     fill "$dir/README.md" check-config \

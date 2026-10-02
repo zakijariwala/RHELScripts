@@ -1,0 +1,4 @@
+#!/bin/bash
+# Stub needs-restarting -r. Exit 0 (no reboot) unless the fixture holds
+# needs-restarting.rc.
+exit "$(cat "$STUB_FIXTURES/needs-restarting.rc" 2>/dev/null || echo 0)"

@@ -131,7 +131,7 @@ CONFIG   ALERT_WINDOW_HRS                               4 [default]             
 CONFIG   checks                                         per node: CPU, memory, swap, load, filesystems, alert log ORA- errors  INFO
 TEST     racnode1                                       this host                                                              OK
 TEST     ssh racnode2                                   login works                                                            OK
-SUMMARY  racnode1 node-check 1.0.0 2026-10-02 20:18:53  CRIT=0 WARN=0 OK=2                                                     OK
+SUMMARY  racnode1 node-check 1.0.0 2026-10-02 23:39:17  CRIT=0 WARN=0 OK=2                                                     OK
 ```
 <!-- sample:check-config:end -->
 
@@ -158,13 +158,13 @@ Sample output (from a test run against fake data):
 ```
 SECTION         KEY                                            VALUE                                                                          STATUS
 FILESYSTEM      racnode1 /u01                                  Used=83%                                                                       WARN
-OS UTILIZATION  racnode1                                       CPU: 26.63% Mem: 76.24% Swap: 0.73% Load/core: 0.02 (flagged: Mem)             WARN
+OS UTILIZATION  racnode1                                       CPU: 26.63% Mem: 76.24% Swap: 0.73% Load/core: 0.01 (flagged: Mem)             WARN
 FILESYSTEM      racnode1                                       5 checked, highest 83% on /u01                                                 WARN
 ALERT LOG       racnode1                                       0 ORA- in 4h                                                                   OK
-OS UTILIZATION  racnode2                                       CPU: 18.98% Mem: 52.83% Swap: 0.00% Load/core: 0.02                            OK
+OS UTILIZATION  racnode2                                       CPU: 18.98% Mem: 52.83% Swap: 0.00% Load/core: 0.01                            OK
 FILESYSTEM      racnode2                                       5 checked, highest 70% on /u01                                                 OK
 ALERT LOG       racnode2                                       2 ORA- in 4h, latest: ORA-00060: deadlock detected while waiting for resource  WARN
-SUMMARY         racnode1 node-check 1.0.0 2026-10-02 20:18:53  CRIT=0 WARN=4 OK=3                                                             WARN
+SUMMARY         racnode1 node-check 1.0.0 2026-10-02 23:39:18  CRIT=0 WARN=4 OK=3                                                             WARN
 ```
 <!-- sample:run:end -->
 

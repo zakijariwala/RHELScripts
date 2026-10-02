@@ -112,7 +112,7 @@ CONFIG   GG_CKPT_WARN_MIN                             5 [default]               
 CONFIG   GG_CKPT_CRIT_MIN                             15 [default]                                       INFO
 CONFIG   checks                                       per extract: status, lag, checkpoint age           INFO
 TEST     ssh gghost01                                 login works, /home/oracle/scripts/gg2.sh readable  OK
-SUMMARY  racnode1 gg-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=1                                 OK
+SUMMARY  racnode1 gg-check 1.0.0 2026-10-02 23:39:17  CRIT=0 WARN=0 OK=1                                 OK
 ```
 <!-- sample:check-config:end -->
 
@@ -139,7 +139,7 @@ Sample output (from a test run against fake data):
 ```
 SECTION     KEY                                          VALUE                                                                                        STATUS
 GOLDENGATE  X_EXTRACT1                                   RUNNING, lag 00:00:04, checkpoint 1m ago, started 2026-09-20 15:37, SCN 18.25 (79891234567)  OK
-SUMMARY     racnode1 gg-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=1                                                                           OK
+SUMMARY     racnode1 gg-check 1.0.0 2026-10-02 23:39:17  CRIT=0 WARN=0 OK=1                                                                           OK
 ```
 <!-- sample:run:end -->
 

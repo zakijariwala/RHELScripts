@@ -19,13 +19,13 @@ name="$1"; shift
 fixture=sample
 if [ $# -gt 0 ] && [ "$1" != -- ]; then fixture="$1"; shift; fi
 [ "${1:-}" = -- ] && shift
-src="$REPO/scripts/oracle-rac/$name/$name.sh"
+src=$(find "$REPO/scripts" -path "*/$name/$name.sh" | head -1)
 fx="$REPO/tests/fixtures/$fixture"
 [ -r "$src" ] || { echo "no script $src" >&2; exit 64; }
 WORK=$(mktemp -d) || exit 1
 trap 'rm -rf "$WORK"' EXIT
 cp "$src" "$WORK/"
-cp "$fx"/* "$WORK/" 2>/dev/null
+cp -r "$fx"/* "$WORK/" 2>/dev/null
 ckpt=$(date -d '-1 min' '+%Y-%m-%d %H:%M:%S')
 sed -i "s/@CKPT@/$ckpt/" "$WORK/gg2.out" 2>/dev/null
 if [ -r "$fx/config/$name.env" ]; then
@@ -45,7 +45,7 @@ tidy() {
     if [ "${TIDY:-0}" = 1 ]; then
         sed -e "s|$REPO/tests/stubs/grid|/u01/app/19.0.0/grid|g" \
             -e "s|$REPO/tests/stubs|/home/oracle/scripts|g" \
-            -e "s|$WORK/config.env|/home/oracle/scripts/oracle-rac/$name/config.env|g" \
+            -e "s|$WORK/config.env|/home/oracle/scripts/$(basename "$(dirname "$(dirname "$src")")")/$name/config.env|g" \
             -e "s|$WORK|/home/oracle|g" | realign
     else cat; fi
 }

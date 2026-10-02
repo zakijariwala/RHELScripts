@@ -110,7 +110,7 @@ CONFIG   LAG_CRIT_MIN                                 60 [default]              
 CONFIG   SQL_TIMEOUT                                  300 [default]                                                      INFO
 CONFIG   checks                                       archive destinations, standby destination, gap and lag per thread  INFO
 TEST     standby destination                          detected 2, configured auto                                        OK
-SUMMARY  racnode1 dr-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=1                                                 OK
+SUMMARY  racnode1 dr-check 1.0.0 2026-10-02 23:39:17  CRIT=0 WARN=0 OK=1                                                 OK
 ```
 <!-- sample:check-config:end -->
 
@@ -141,7 +141,7 @@ ARCHIVE DEST    Dest 2 -> DEMODB_DR                          VALID              
 DB SYNC STATUS  standby destination                          detected 2, configured auto       INFO
 DB SYNC STATUS  Thread 1                                     PR=48211 DR=48210 GAP=1 LAG=4min  OK
 DB SYNC STATUS  Thread 2                                     PR=47102 DR=47102 GAP=0 LAG=0min  OK
-SUMMARY         racnode1 dr-check 1.0.0 2026-10-02 20:18:52  CRIT=0 WARN=0 OK=4                OK
+SUMMARY         racnode1 dr-check 1.0.0 2026-10-02 23:39:17  CRIT=0 WARN=0 OK=4                OK
 ```
 <!-- sample:run:end -->
 

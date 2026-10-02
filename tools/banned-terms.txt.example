@@ -1,0 +1,19 @@
+# banned-terms.txt.example
+#
+# Copy this file to tools/banned-terms.txt and replace the lines below with
+# real words that must never appear in the repo. .gitignore keeps
+# tools/banned-terms.txt out of git, so the real words stay on your machine.
+#
+# One term per line. Matching ignores case and treats each line as plain
+# text (no wildcards). Lines starting with # are ignored.
+#
+# What to list:
+#   - employer name and its short forms
+#   - real host names and cluster names
+#   - database names, service names, schema names
+#   - GoldenGate extract and replicat names
+#   - names of colleagues and teams
+#   - internal domain names
+CHANGE_ME_EMPLOYER_NAME
+CHANGE_ME_DB_NAME
+CHANGE_ME_SCHEMA_NAME

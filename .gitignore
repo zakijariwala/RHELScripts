@@ -1,0 +1,51 @@
+# Real values never enter git. Each ignored file has a committed *.example.
+
+# Script configuration with real hosts, schema names, mail addresses
+config.env
+**/config.env
+
+# Ansible: real inventories and variables, vault files, vault passwords
+ansible/inventory/*
+!ansible/inventory/example.ini
+!ansible/inventory/.gitkeep
+ansible/group_vars/*
+!ansible/group_vars/*.example
+!ansible/group_vars/.gitkeep
+ansible/host_vars/
+*vault*.yml
+*vault*.yaml
+.vault_pass*
+*.retry
+
+# Banned-terms list for tools/check-sanitized.sh (the words stay local)
+tools/banned-terms.txt
+
+# Run output: history logs, lock files, reports
+checklist_history/
+*.log
+*.lock
+*.out
+report*.html
+
+# Keys and secrets
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+id_ecdsa*
+.env
+.env.*
+
+# Build packet from the original chat; holds context that stays private
+PROMPT.md
+CONTEXT.md
+seed/
+
+# Editor and OS clutter
+*.swp
+*~
+.DS_Store
+.vscode/
+.idea/

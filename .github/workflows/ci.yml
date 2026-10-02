@@ -1,0 +1,87 @@
+# CI for every push and pull request.
+# Jobs that have nothing to check yet (no .bats files, no playbooks) pass
+# with a notice instead of failing, so each phase can switch its job on by
+# adding files.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck every .sh file
+        run: |
+          shellcheck --version
+          find scripts tools tests -name '*.sh' -print0 | xargs -0 -r shellcheck
+
+  # Both repo tools run on Ubuntu (mawk) and on RHEL 8 / 9 rebuilds (gawk),
+  # because fresher-facing scripts must run on the RHEL targets.
+  repo-tools:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["", "rockylinux:8", "rockylinux:9"]
+    container: ${{ matrix.image != '' && matrix.image || null }}
+    steps:
+      - name: install git (RHEL containers)
+        if: matrix.image != ''
+        run: dnf -y -q install git-core findutils grep gawk
+      - uses: actions/checkout@v4
+      - name: check-readonly-sql
+        run: tools/check-readonly-sql.sh
+      - name: check-sanitized
+        env:
+          BANNED_TERMS: ${{ secrets.BANNED_TERMS }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if [ -n "$BANNED_TERMS" ]; then
+            printf '%s\n' "$BANNED_TERMS" > tools/banned-terms.txt
+            tools/check-sanitized.sh
+          else
+            echo "::warning::Secret BANNED_TERMS is not set; banned-terms check skipped. See docs/safety.md."
+            tools/check-sanitized.sh --allow-missing-terms
+          fi
+
+  bats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: run bats tests
+        run: |
+          if ! find tests -name '*.bats' | grep -q .; then
+            echo "::notice::No .bats files yet; bats job skipped."
+            exit 0
+          fi
+          sudo apt-get update -q && sudo apt-get install -y -q bats
+          bats --recursive tests
+
+  ansible-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: run ansible-lint
+        run: |
+          if ! find ansible -name '*.yml' -not -name '*.example' | grep -q .; then
+            echo "::notice::No Ansible YAML yet; ansible-lint job skipped."
+            exit 0
+          fi
+          pip install --quiet ansible-lint
+          cd ansible && ansible-lint
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

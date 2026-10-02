@@ -1,0 +1,23 @@
+#!/bin/bash
+# Stub ssh. Skips options, then takes HOST and COMMAND.
+#   COMMAND "bash -s"  -> runs stdin locally as node STUB_NODE=2 (os_collect)
+#   COMMAND "sh ..."   -> prints $STUB_FIXTURES/gg2.out (GoldenGate)
+# If $STUB_FIXTURES/ssh.<HOST>.fail exists, behaves like an unreachable host.
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -o|-p|-i|-l) shift 2 ;;
+        -*)          shift ;;
+        *)           break ;;
+    esac
+done
+host="$1"; shift
+if [ -e "$STUB_FIXTURES/ssh.$host.fail" ]; then
+    cat > /dev/null
+    echo "ssh: connect to host $host port 22: Connection timed out" >&2
+    exit 255
+fi
+case "$*" in
+    "bash -s") STUB_NODE=2 exec bash -s ;;
+    sh\ *)     cat "$STUB_FIXTURES/gg2.out" ;;
+    *)         echo "stub ssh: unexpected command: $*" >&2; exit 1 ;;
+esac

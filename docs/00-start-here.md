@@ -12,11 +12,11 @@ that phase.
 | Check that a script changes nothing before I run it | [safety.md](safety.md) |
 | Commit to this repo without leaking a real name, IP or password | [pre-commit-hook.md](pre-commit-hook.md) |
 | Run anything new on a production server | [change-requests.md](change-requests.md) |
-| Set up the Oracle RAC checklist on a database server | `scripts/oracle-rac-checklist/README.md` *(Phase 1)* |
-| Understand a line in the checklist output | `scripts/oracle-rac-checklist/RUNBOOK.md` *(Phase 1)* |
-| Know what OK, WARN, CRIT, INFO and the exit codes mean | [reading-output.md](reading-output.md) *(Phase 1)* |
-| Install sysstat, bats or Ansible on a server with no internet | [offline-install.md](offline-install.md) *(Phase 1)* |
-| Learn how the checklist code works, line by line | `scripts/oracle-rac-checklist/HOW-IT-WORKS.md` *(Phase 1)* |
+| Set up the Oracle RAC checklist on a database server | [scripts/oracle-rac-checklist/README.md](../scripts/oracle-rac-checklist/README.md) |
+| Understand a line in the checklist output | [scripts/oracle-rac-checklist/RUNBOOK.md](../scripts/oracle-rac-checklist/RUNBOOK.md) |
+| Know what OK, WARN, CRIT, INFO and the exit codes mean | [reading-output.md](reading-output.md) |
+| Install sysstat, bats or Ansible on a server with no internet | [offline-install.md](offline-install.md) |
+| Learn how the checklist code works, line by line | [scripts/oracle-rac-checklist/HOW-IT-WORKS.md](../scripts/oracle-rac-checklist/HOW-IT-WORKS.md) |
 | Run the tests | `docs/testing.md` *(Phase 2)* |
 | Check many servers at once with Ansible | `ansible/README.md` *(Phase 3)* |
 | Reboot servers one at a time, with guards | `ansible/README.md` *(Phase 4)* |

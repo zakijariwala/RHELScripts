@@ -9,6 +9,11 @@ this repo.
 
 ## Linux and general
 
+### config.env
+The settings file next to a check script. It holds real host names and
+thresholds, so git never stores it; the repo ships `config.env.example`
+instead. The checklist reads it as `KEY=value` lines and never runs it.
+
 ### cron
 The Linux scheduler. A line in a crontab file runs a command at set times.
 The checklist runs by hand today; a cron rollout guide comes later.
@@ -17,15 +22,42 @@ The checklist runs by hand today; a cron rollout guide comes later.
 A number a command hands back when it finishes. `echo $?` prints it. In
 this repo 0 means OK, 1 WARN, 2 CRIT, 3 already running, 64 bad usage.
 
+### file descriptor
+A number a process uses for an open file. 0 is input, 1 is output, 2 is
+errors. `exec 9>file` opens a file as number 9 for the rest of a script.
+
+### flock
+A command that takes a lock on a file. The checklist uses it so two runs
+cannot overlap; the second exits with code 3.
+
 ### heredoc
 A block of text inside a shell script, fed to a command as its input.
 It starts with `<<EOF` and ends at a line holding `EOF`. The checklist
 sends its SQL to sqlplus this way.
 
+### load average
+The number of processes running or waiting for CPU, averaged over 1, 5
+and 15 minutes (`/proc/loadavg`). Divided by the number of cores, above 1
+means work queues for CPU.
+
 ### MTA
 Mail transfer agent. The program on a server that accepts mail
 (`/usr/sbin/sendmail`) and passes it to the company mail server. Postfix
 is the usual MTA on RHEL.
+
+### passwordless ssh
+ssh login with a key pair instead of a password. The private key stays in
+`~/.ssh` on the client; the public key sits in `~/.ssh/authorized_keys` on
+the server. Scripts need it, because nobody types a password at 3 a.m.
+
+### Postfix
+The MTA on RHEL. Its settings live in `/etc/postfix/main.cf`; `postconf
+relayhost` shows where it forwards mail. It logs to `/var/log/maillog`.
+
+### relay host
+The company mail server that accepts mail from servers and passes it to
+Exchange. Exchange accepts it only from servers listed on its **receive
+connector**, which the mail team manages.
 
 ### sar
 A command from the `sysstat` package that reports CPU, memory and disk
@@ -40,9 +72,23 @@ An ssh option (`-o BatchMode=yes`) that makes ssh fail at once instead of
 waiting for a password nobody will type. Every ssh call in this repo uses
 it.
 
+### stale file
+An input file older than expected. The checklist reads files that other
+jobs rewrite every few minutes. If a file stops changing, the job that
+writes it has stopped, and the script reports CRIT instead of trusting old
+numbers.
+
 ### stub
 A fake version of a command (`sqlplus`, `ssh`, `sar`) used in tests. It
 prints canned output, so tests run with no real server.
+
+### swap
+Disk space Linux uses as overflow memory. A database server that swaps
+slows down, because disk is far slower than memory.
+
+### timeout
+A command that runs another command and kills it after a set number of
+seconds (`timeout 60 crsctl ...`). It then returns exit code 124.
 
 ## Oracle
 
@@ -50,10 +96,9 @@ prints canned output, so tests run with no real server.
 A text log each Oracle instance writes. Errors appear in it as lines
 containing `ORA-` followed by a number.
 
-### ASM
-Automatic Storage Management. Oracle's own volume manager. It groups disks
-into **diskgroups** (for example DATA and FRA) and stores database files
-in them.
+### archive destination
+A place the database sends archive logs: local disk (the FRA) or a
+standby database. `v$archive_dest` lists them.
 
 ### archive log
 A copy of a filled redo log. The database writes one after each log
@@ -63,10 +108,25 @@ switch. Backups and Data Guard both depend on them.
 A database setting that keeps every redo log as an archive log. Production
 databases run in this mode.
 
+### ASM
+Automatic Storage Management. Oracle's own volume manager. It groups disks
+into **diskgroups** (for example DATA and FRA) and stores database files
+in them.
+
+### autoextend
+A data file setting that lets Oracle grow the file on its own, up to a
+maximum size (`maxbytes`). The checklist measures tablespaces against that
+maximum, not the current size.
+
 ### Clusterware
 Oracle's cluster software (part of Grid Infrastructure). It starts,
 stops and watches instances, listeners, ASM and virtual IPs on every node.
 `crsctl stat res -t` lists what it manages.
+
+### crsctl
+The Clusterware command-line tool, in `GRID_HOME/bin`. `crsctl stat res -t`
+lists every cluster resource with its TARGET (wanted state) and STATE
+(actual state).
 
 ### Data Guard
 Oracle's standby database feature. A second database on a DR site
@@ -80,6 +140,11 @@ Disaster recovery. The second site that takes over if the main site fails.
 Fast Recovery Area. A disk area where Oracle keeps archive logs and
 backups. When it fills in ARCHIVELOG mode, the database stops.
 
+### gg2.sh, activesession.sh
+Two site scripts that already live on the servers and report GoldenGate
+extracts and active session peaks. This repo does not contain them. The
+checklist runs them and parses their output.
+
 ### GoldenGate
 Oracle's replication product. An **extract** process reads changes from
 the database; **pumps** and **replicats** carry and apply them elsewhere.
@@ -88,6 +153,11 @@ the database; **pumps** and **replicats** carry and apply them elsewhere.
 ### Grid Infrastructure
 The Oracle software layer under the database: Clusterware plus ASM. Its
 install directory is the **GRID_HOME**.
+
+### GRID_HOME
+The folder where Grid Infrastructure is installed, for example
+`/u01/app/19.0.0/grid`. `/etc/oracle/olr.loc` records it in its `crs_home`
+line.
 
 ### instance
 The set of Oracle processes and memory that serves a database on one
@@ -102,6 +172,10 @@ The Oracle process that accepts new client connections on a network port.
 
 ### ORA- error
 An Oracle error message, such as `ORA-01034: ORACLE not available`.
+
+### ORACLE_HOME
+The folder where the Oracle database software is installed. `sqlplus`
+lives in `$ORACLE_HOME/bin`. The oracle user's login profile sets it.
 
 ### ORACLE_SID
 The name of the instance on the current server. The `oracle` user's
@@ -118,6 +192,10 @@ files.
 
 ### RMAN
 Recovery Manager. Oracle's backup tool.
+
+### SCAN
+Single Client Access Name. One name for the whole cluster that clients
+connect to; Clusterware runs SCAN listeners and VIPs behind it.
 
 ### schema
 A database user and the tables it owns. The application's tables sit in
@@ -146,6 +224,11 @@ A named storage area inside the database. **TEMP** holds sort space,
 ### thread
 In RAC, each instance writes its own redo stream, called a thread. Node 1
 writes thread 1, node 2 writes thread 2.
+
+### VIP
+Virtual IP. An extra IP address per node that Clusterware moves to the
+other node when a node fails, so clients get a fast error instead of a
+long timeout.
 
 ## Ansible
 
@@ -178,15 +261,15 @@ out of git.
 
 ## Repo terms
 
-### CRIT, WARN, OK, INFO
-The four statuses every script prints. CRIT needs action now. WARN needs a
-look today. OK means the value was measured and is inside its limits.
-INFO is a fact with no limit. `reading-output.md` (Phase 1) covers them in
-full.
-
 ### change request (CR)
 An approved ticket that allows a change on production. See
 [change-requests.md](change-requests.md).
+
+### CRIT, WARN, OK, INFO
+The four statuses every script prints. CRIT needs action now. WARN needs a
+look today. OK means the value was measured and is inside its limits.
+INFO is a fact with no limit. [reading-output.md](reading-output.md)
+covers them in full.
 
 ### fresher
 A new team member who knows basic Linux and none of Oracle or Ansible.

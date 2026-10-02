@@ -1,0 +1,7 @@
+#!/bin/bash
+# Stub sqlplus. Ignores the SQL on stdin and prints $STUB_FIXTURES/sqlplus.out.
+# Optional: $STUB_FIXTURES/sqlplus.rc holds the exit code to return.
+# Optional: STUB_SQL_CAPTURE=FILE saves the SQL the script sent.
+cat > "${STUB_SQL_CAPTURE:-/dev/null}"
+cat "$STUB_FIXTURES/sqlplus.out" 2>/dev/null
+exit "$(cat "$STUB_FIXTURES/sqlplus.rc" 2>/dev/null || echo 0)"

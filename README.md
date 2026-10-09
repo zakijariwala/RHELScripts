@@ -9,6 +9,8 @@ run it when needed. Scripts are short enough to type by hand.
 | Script | What it does |
 |---|---|
 | [health-check](scripts/health-check/) | OS, disk, time, agents; database, ASM, listener and cluster on DB nodes |
+| [net-check](scripts/net-check/) | is it this server, DNS or the network? ends with a VERDICT line |
+| [dns-check](scripts/dns-check/) | every line of resolv.conf, every nameserver over UDP and TCP |
 
 [docs/inventory.md](docs/inventory.md) lists the servers.
 [docs/planned.md](docs/planned.md) holds approved designs not built yet.

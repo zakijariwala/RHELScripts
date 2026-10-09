@@ -17,23 +17,24 @@ warn() { echo -e "${Y}[WARN]${NC} $*"; W=$((W+1)); }
 crit() { echo -e "${R}[CRIT]${NC} $*"; C=$((C+1)); }
 line() { echo "== $* =="; }
 
-line "$(hostname) $(date '+%F %T')  query: $Q"
+line "$(hostname) ($(hostname -I | xargs)) $(date '+%F %T')"
+echo "query: $Q"
 
 line "$RESOLV"
-NS=''; N=0; SEARCH=''; OPTS=''
+NS=''; FIRST3=''; N=0; SEARCH=''; OPTS=''
 while read -r KEY VAL REST; do
   case $KEY in
     ''|'#'*|';'*|sortlist) ;;
-    nameserver) N=$((N+1))
+    nameserver) N=$((N+1)); [ $N -le 3 ] && FIRST3="$FIRST3 $VAL "
       case " $NS " in *" $VAL "*) warn "nameserver $VAL listed twice" ;;
                       *) NS="$NS $VAL" ;; esac ;;
-    search|domain) SEARCH="$VAL $REST" ;;
+    search|domain) SEARCH="$VAL${REST:+ $REST}" ;;
     options) OPTS="$VAL $REST" ;;
     *) warn "unknown line: $KEY (the resolver ignores it)" ;;
   esac
 done < "$RESOLV"
 [ $N -eq 0 ] && crit "no nameserver line"
-[ $N -gt 3 ] && warn "$N nameservers: only the first 3 are used"
+[ $N -gt 3 ] && warn "$N nameservers: only the first 3 are ever asked"
 [ "$(wc -w <<< "$SEARCH")" -gt 6 ] && warn "more than 6 search domains"
 echo "nameservers:$NS"
 echo "search: ${SEARCH:-none}"
@@ -45,34 +46,44 @@ for O in $OPTS; do
   esac
 done
 
-line "Nameservers"
+line "Nameservers (the resolver only asks the first 3)"
 DIG=$(command -v dig)
 [ -z "$DIG" ] && warn "dig not installed: only TCP 53 tested"
+FMT='%-16s %-4s %-8s %-6s %7s  %-16s %b%-4s%b %s\n'
+printf "$FMT" NAMESERVER USED UDP TCP53 TIME ANSWER '' STATUS '' NOTE
 REF=''
 for S in $NS; do
+  case $FIRST3 in *" $S "*) USED=yes ;; *) USED=no ;; esac
   if timeout 8 nc -zv -w 3 "$S" 53 2>&1 | grep -q Connected
   then T=open; else T=closed; fi
-  if [ -z "$DIG" ]; then
-    if [ $T = open ]; then ok "$S TCP 53 open"; else crit "$S TCP 53 closed"; fi
-    continue
+  ST=''; MS=''; ANS=''; AN=0
+  if [ -n "$DIG" ]; then
+    D=$(dig @"$S" +search +notcp +time=2 +tries=1 "$Q" 2>&1)
+    ST=$(echo "$D" | grep -o 'status: [A-Z]*' | cut -d' ' -f2)
+    AN=$(echo "$D" | grep -o 'ANSWER: [0-9]*' | cut -d' ' -f2)
+    MS=$(echo "$D" | awk '/Query time/{print $4}')
+    ANS=$(echo "$D" | awk '$4=="A"{print $5}' | sort | tr '\n' ' ')
+    ANS=${ANS% }
   fi
-  D=$(dig @"$S" +search +notcp +time=2 +tries=1 "$Q" 2>&1)
-  ST=$(echo "$D" | grep -o 'status: [A-Z]*' | cut -d' ' -f2)
-  AN=$(echo "$D" | grep -o 'ANSWER: [0-9]*' | cut -d' ' -f2)
-  MS=$(echo "$D" | awk '/Query time/{print $4}')
-  ANS=$(echo "$D" | awk '$4=="A"{print $5}' | sort | tr '\n' ' ')
-  ANS=${ANS% }
-  if [ -z "$ST" ] && [ $T = closed ]; then crit "$S: no answer on UDP or TCP"
-  elif [ -z "$ST" ]; then crit "$S: no UDP answer, TCP 53 open (firewall?)"
-  elif [ "$ST" != NOERROR ]; then crit "$S: $Q status $ST"
-  elif [ "${AN:-0}" -eq 0 ]; then crit "$S: no record for $Q"
-  elif [ "${MS:-0}" -gt 1000 ]; then warn "$S: slow answer, $MS ms"
-  else ok "$S: UDP $MS ms, TCP 53 $T, $Q = $ANS"; fi
-  [ -z "$ST" ] && continue
-  [ "$ST" = NOERROR ] && [ $T = closed ] && warn "$S: TCP 53 closed (UDP works)"
-  [ -n "$ANS" ] && [ -n "$REF" ] && [ "$ANS" != "$REF" ] &&
-    warn "$S answers $ANS, an earlier nameserver answered $REF"
+  L=OK; NOTE=''
+  if [ -z "$DIG" ]; then [ $T = closed ] && L=CRIT NOTE="TCP 53 closed"
+  elif [ -z "$ST" ] && [ $T = closed ]; then L=CRIT NOTE="no answer at all"
+  elif [ -z "$ST" ]; then L=CRIT NOTE="no UDP answer (firewall?)"
+  elif [ "$ST" != NOERROR ]; then L=CRIT NOTE="$Q: $ST"
+  elif [ "${AN:-0}" -eq 0 ]; then L=CRIT NOTE="no record for $Q"
+  elif [ "${MS:-0}" -gt 1000 ]; then L=WARN NOTE="slow"
+  elif [ $T = closed ]; then L=WARN NOTE="TCP 53 closed, large answers fail"
+  elif [ -n "$REF" ] && [ "$ANS" != "$REF" ]; then L=WARN NOTE="answer differs"
+  fi
+  [ $USED = no ] && [ $L = CRIT ] && L=WARN NOTE="$NOTE (never asked)"
   [ -z "$REF" ] && REF=$ANS
+  case $L in
+    OK) COL=$G ;; WARN) COL=$Y; W=$((W+1)) ;; *) COL=$R; C=$((C+1)) ;;
+  esac
+  A1=${ANS%% *}; [ "$A1" != "$ANS" ] && A1="$A1+"
+  printf "$FMT" "$S" "$USED" "${ST:-none}" "$T" "${MS:+$MS ms}" "${A1:--}" \
+    "$COL" "$L" "$NC" "$NOTE"
+  [ -z "$ST" ] && continue
   for SD in $SEARCH; do
     X=$(dig @"$S" +notcp +time=2 +tries=1 "$SD" SOA | grep -o 'status: [A-Z]*')
     [ "$X" = "status: NOERROR" ] || warn "$S: search $SD: ${X:-no answer}"

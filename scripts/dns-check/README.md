@@ -22,7 +22,18 @@ Left as `CHANGE_ME`, the script uses this server's own name
 - `options timeout` over 5 or `attempts` over 3: WARN (slow failover)
 - unknown lines, e.g. `namserver`: WARN (the resolver ignores them)
 
-**Each nameserver**
+**Each nameserver**, one row each in a table:
+
+```
+NAMESERVER       USED UDP      TCP53     TIME  ANSWER           STATUS NOTE
+192.0.2.53       yes  NOERROR  open      3 ms  192.0.2.74       OK
+192.0.2.54       yes  none     closed          -                CRIT no answer at all
+192.0.2.60       no   NOERROR  open     31 ms  192.0.2.74       OK
+```
+
+- USED: the resolver only asks the first 3 `nameserver` lines (a
+  duplicate line takes a slot). Rows with `no` are tested but never used
+  by applications; a dead one there is WARN, not CRIT
 - TCP 53 with `nc -zv`, UDP with `dig +notcp`
 - the query must return NOERROR with at least one record; no answer,
   SERVFAIL, NXDOMAIN or REFUSED: CRIT; over 1000 ms: WARN

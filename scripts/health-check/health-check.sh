@@ -61,8 +61,8 @@ say $L Swap "$SWP% used"
 
 line "Filesystems"
 declare -A INO
-while read -r _ _ _ _ USE MNT; do INO[$MNT]=${USE%\%}
-done < <(timeout 10 df -P -l -i -x tmpfs -x devtmpfs | tail -n +2)
+DFI=$(timeout 10 df -P -l -i -x tmpfs -x devtmpfs | tail -n +2)
+while read -r _ _ _ _ USE MNT; do INO[$MNT]=${USE%\%}; done <<< "$DFI"
 DF=$(timeout 10 df -P -h -l -x tmpfs -x devtmpfs | tail -n +2)
 [ $? -eq 124 ] && crit Filesystems "df hung: a filesystem is not responding"
 printf "         %6s %5s %6s  %s\n" SIZE USED INODES MOUNT

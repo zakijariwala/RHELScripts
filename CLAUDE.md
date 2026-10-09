@@ -13,6 +13,8 @@ Rules for every script unless the owner says otherwise:
 - Hardcode IPs, host names, SIDs where a script needs them.
   docs/inventory.md is the server list.
 - `set -o pipefail`, every command that can hang in `timeout`.
+- Must also run as `sh script.sh` (bash in POSIX mode): no `< <(...)`
+  process substitution. Test with `bash --posix`.
 - Lines `[ OK ]`, `[WARN]`, `[CRIT]`; exit 0/1/2.
 - shellcheck clean (style notes may stay if the fix hurts readability).
 - Each script folder has a README: how to run, settings, what it checks.

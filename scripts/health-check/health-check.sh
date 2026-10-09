@@ -4,7 +4,8 @@
 set -o pipefail
 
 DB=vpsdb
-AGENTS="splunkd crond chronyd ds_agent rscd tmxbc ragent ragentinst"
+AGENTS="splunkd crond chronyd ds_agent rscd tmxbc"
+DB_AGENTS="ragent ragentinst"   # Imperva DAM: DB servers only
 CRS="ohasd ocssd crsd evmd gpnpd gipcd mdnsd octssd osysmond"
 FS_WARN=70
 FS_CRIT=90
@@ -100,6 +101,7 @@ elif [ "${OFF:-0}" -ge 100 ]; then warn Chrony "synced $SRC, offset $OFF ms"
 else ok Chrony "synchronised $SRC, offset ${OFF:-0} ms"; fi
 
 line "Agents and services"
+[ $ORA -eq 1 ] && AGENTS="$AGENTS $DB_AGENTS"
 for A in $AGENTS; do
   if pgrep -x "$A" > /dev/null; then L=OK; TXT=running
   else L=CRIT; TXT="not running"; fi

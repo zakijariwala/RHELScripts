@@ -15,7 +15,9 @@ or `/etc/oracle/olr.loc`), so the same script works on web, app and DB
 servers.
 
 Settings at the top: `DB` (database name, instances are `vpsdb1`,
-`vpsdb2`), `AGENTS`, `CRS` daemons, `FS_WARN` / `FS_CRIT`.
+`vpsdb2`), `AGENTS` (every server), `DB_AGENTS` (only where Oracle is
+found: the Imperva DAM agent `ragent`, `ragentinst`), `CRS` daemons,
+`FS_WARN` / `FS_CRIT`.
 
 ## Blind spots fixed from the original
 

@@ -96,7 +96,7 @@ SRC=$(echo "$TRK" | awk -F'[()]' '/^Reference ID/{print $2}')
 SRC="to $SRC (stratum $(echo "$TRK" | awk '/^Stratum/{print $3}'))"
 if [ -z "$TRK" ]; then crit Chrony "no answer (chronyd down?)"
 elif [ "$LEAP" != "Normal" ]; then crit Chrony "clock not synchronised"
-elif [ "${OFF:-0}" -ge 100 ]; then warn Chrony "synchronised $SRC, offset $OFF ms"
+elif [ "${OFF:-0}" -ge 100 ]; then warn Chrony "synced $SRC, offset $OFF ms"
 else ok Chrony "synchronised $SRC, offset ${OFF:-0} ms"; fi
 
 line "Agents and services"

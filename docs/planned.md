@@ -94,9 +94,10 @@ can.
 
 ### Open questions (answer before building)
 
-1. ~~Is `dig` on the servers?~~ Yes on the PROD app server that runs
-   the old dns_check.sh (dig and nc both used). Keep a getent-only
-   fallback for servers without bind-utils.
+1. ~~Is `dig` on the servers?~~ Confirmed: dig 9.11.36 (RHEL 8
+   bind-utils) on the PROD app server. Use only options 9.11 has:
+   `@server`, `+time`, `+tries`, `+tcp`/`+notcp`, `+short`. Keep a
+   getent-only fallback for servers without bind-utils.
 2. Is ping allowed between environments and to the gateway? If not,
    ping results become INFO.
 3. Default targets when run with no arguments (DNS, NTP, backup

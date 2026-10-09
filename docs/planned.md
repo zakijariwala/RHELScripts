@@ -37,14 +37,37 @@ Default port 22. Read-only, login user, no root.
    - ping the default gateway
    - gateway ARP entry (`ip neigh`): FAILED/INCOMPLETE = layer 2 problem
      (cable, switch port, VLAN)
-3. **DNS** (only when a name is given; fail = DNS)
-   - `/etc/resolv.conf` has at least one nameserver
-   - each nameserver answers on port 53
-   - `getent hosts` result and time taken; over 2s usually means the first
-     nameserver is dead
-   - with `dig`: ask each nameserver separately, flag disagreement
-   - say so if the name comes from `/etc/hosts` (stale entries)
+3. **DNS** (always; replaces the old `dns_check.sh`; fail = DNS)
+   - `/etc/resolv.conf`: at least one nameserver (skip `#` and `;`
+     comments); show `search` and `options timeout/attempts/rotate`
+   - per nameserver, a table like the old script's but with a real
+     status: TCP 53 (bash `/dev/tcp`, under `timeout`) **and** a UDP
+     query (`dig +notcp`), since DNS is mainly UDP and one can work while
+     the other is blocked
+   - per nameserver, `dig @server TEST_NAME`: status must be NOERROR with
+     at least one answer; show query time; no reply = CRIT, SERVFAIL /
+     NXDOMAIN = CRIT, over 1000 ms = WARN
+   - flag nameservers that give different answers for the same name
+   - `TEST_NAME` hardcoded at the top (the internal domain the old script
+     queried); the target name is queried too when one is given
+   - system resolver path: `getent hosts` result and time taken (over 2s
+     usually means the first nameserver is dead); say so if the answer
+     comes from `/etc/hosts` (stale entries)
    - reverse lookup of the resolved IP; mismatch = WARN
+
+   Blind spots in the old `dns_check.sh` this fixes:
+   - "Refused" shown for every failure: timeout, no route, nc missing
+     and nc output format all looked the same
+   - TCP 53 only; UDP never tested
+   - `nc` without a timeout can hang
+   - dig result not checked: a timeout or SERVFAIL still printed a row,
+     only the query time was read (blank on failure)
+   - only one name queried, answers never compared between servers
+   - system resolver (`/etc/hosts`, nsswitch, search domains) never
+     tested, though that is what applications use
+   - writes `file1`/`file2` in the current folder and glues them with
+     `pr`; `for i in 177` loop builds an IP that is never checked
+   - no exit code
 4. **Path to target**
    - ping the target; failure alone is only WARN (ICMP often blocked)
    - TCP connect to the port:
@@ -71,7 +94,9 @@ can.
 
 ### Open questions (answer before building)
 
-1. Is `dig` (bind-utils) on the servers?
+1. ~~Is `dig` on the servers?~~ Yes on the PROD app server that runs
+   the old dns_check.sh (dig and nc both used). Keep a getent-only
+   fallback for servers without bind-utils.
 2. Is ping allowed between environments and to the gateway? If not,
    ping results become INFO.
 3. Default targets when run with no arguments (DNS, NTP, backup

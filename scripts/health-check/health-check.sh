@@ -92,10 +92,12 @@ line "Time sync"
 TRK=$(timeout 10 chronyc tracking 2>/dev/null)
 LEAP=$(echo "$TRK" | awk -F': ' '/^Leap/{print $2}')
 OFF=$(echo "$TRK" | awk '/^System time/{print int($4*1000)}')
+SRC=$(echo "$TRK" | awk -F'[()]' '/^Reference ID/{print $2}')
+SRC="to $SRC (stratum $(echo "$TRK" | awk '/^Stratum/{print $3}'))"
 if [ -z "$TRK" ]; then crit Chrony "no answer (chronyd down?)"
 elif [ "$LEAP" != "Normal" ]; then crit Chrony "clock not synchronised"
-elif [ "${OFF:-0}" -ge 100 ]; then warn Chrony "synchronised, offset $OFF ms"
-else ok Chrony "synchronised, offset ${OFF:-0} ms"; fi
+elif [ "${OFF:-0}" -ge 100 ]; then warn Chrony "synchronised $SRC, offset $OFF ms"
+else ok Chrony "synchronised $SRC, offset ${OFF:-0} ms"; fi
 
 line "Agents and services"
 for A in $AGENTS; do

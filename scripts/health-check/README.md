@@ -30,7 +30,7 @@ Settings at the top: `DB` (database name, instances are `vpsdb1`,
 | `df` with NFS | a dead NFS server hangs the whole script | local df under `timeout`; each NFS/CIFS mount tested with a 5s timeout |
 | nothing on read-only | disk errors remount xfs/ext4 read-only while df looks fine | CRIT on any read-only xfs/ext4 mount |
 | "device count" | number of `/dev/` lines in df means nothing | removed |
-| `ntpstat` | RHEL 8/9 use chrony; ntpstat is often missing, then `[ -eq 1 ]` errors | `chronyc tracking`: leap status + offset (WARN at 100 ms) |
+| `ntpstat` | works with chrony on RHEL 8, but not installed everywhere (then `[ $n1 -eq 1 ]` errors); shows no server or offset in the old output | `chronyc tracking`: leap status, NTP server, stratum, offset (WARN at 100 ms) |
 | `pgrep $i` | substring match: `rscd` matches any name containing rscd | `pgrep -x` exact name |
 | `packagekitd` required | PackageKit starts on demand and exits when idle: false CRIT | dropped |
 | `sleep 1` per service | 9 seconds wasted | removed |

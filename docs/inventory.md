@@ -1,7 +1,8 @@
 # Inventory
 
-All servers available to me (sanitised: last IP octet only). Reference
-only; scripts do not read this file.
+All servers available to me. The sheet gives the last IP octet only;
+full addresses that are known are listed below. Reference only; scripts
+do not read this file.
 
 | Env | Web | App | DB |
 |---|---|---|---|
@@ -18,10 +19,34 @@ only; scripts do not read this file.
 | DR Backup Server | DR | .79B | DRBKP |
 | Data Warehouse PR | PROD | .116 | DWH |
 
-Points to check in the source sheet:
+## Known full addresses (PROD)
+
+From the DR drill SOP and runs on app05. The sheet's last octets sit on
+more than one subnet.
+
+| Inventory | Full IP | Name in /etc/hosts | Note |
+|---|---|---|---|
+| PRA1-4 | 10.191.146.173-176 | vps.ra1-4 | front end servers must list these |
+| PRA5 | 10.191.146.177 | - | app05 (ens160); also 10.189.72.163 on ens192 |
+| PRA6-9 | 10.191.145.21-24 | vps.app1-4 | back end servers must list these |
+| PRA10 | 10.191.145.25 (probably) | - | to confirm |
+
+## Infrastructure
+
+| What | PR | DR |
+|---|---|---|
+| DNS (resolv.conf order on app05) | 10.189.53.150, 10.189.37.136 | 10.176.126.200, 10.176.53.145, 10.176.54.30-32 |
+| NTP (chrony source on app05) | 10.191.174.52 | ? |
+| DS agent managers (4118 in, 4120/4122 out) | 10.191.146.220, .221 | 10.176.53.122, .123 |
+| Default gateway (app05) | 10.191.144.1 | ? |
+
+Site from a server's own address: 10.191.x = PR, 10.176.x = DR.
+
+## Points to check in the source sheet
 
 - DRBKP IP is `79B`, not a number; `.79` is DRA10.
-- Same last octet in two places (fine only if the subnets differ):
-  .173-177 DEV/PROD, .21-23 ST/PRE-PROD/PROD, .74-75 PROD/DR,
-  .213 PA10/BKP.
+- Same last octet in two environments: only a clash if the subnets are
+  the same. PROD app servers alone use two subnets (.146 and .145), so
+  most of these are likely fine: .173-177 DEV/PROD, .21-23
+  ST/PRE-PROD/PROD, .74-75 PROD/DR, .213 PA10/BKP.
 - No DR copy of DWH.

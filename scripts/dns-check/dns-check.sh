@@ -6,8 +6,10 @@ set -o pipefail
 TEST_NAME=CHANGE_ME   # name every nameserver must answer
 RESOLV=/etc/resolv.conf
 
-[ "$TEST_NAME" = CHANGE_ME ] && TEST_NAME=$(hostname -f)
 Q=${1:-$TEST_NAME}
+if [ "$Q" = CHANGE_ME ]; then
+  echo "Set TEST_NAME at the top of the script, or run: $0 NAME"; exit 64
+fi
 
 G='\033[0;32m'; R='\033[0;31m'; Y='\033[1;33m'; NC='\033[0m'
 [ -t 1 ] || { G=''; R=''; Y=''; NC=''; }
@@ -69,8 +71,8 @@ for S in $NS; do
   if [ -z "$DIG" ]; then [ $T = closed ] && L=CRIT NOTE="TCP 53 closed"
   elif [ -z "$ST" ] && [ $T = closed ]; then L=CRIT NOTE="no answer at all"
   elif [ -z "$ST" ]; then L=CRIT NOTE="no UDP answer (firewall?)"
-  elif [ "$ST" != NOERROR ]; then L=CRIT NOTE="$Q: $ST"
-  elif [ "${AN:-0}" -eq 0 ]; then L=CRIT NOTE="no record for $Q"
+  elif [ "$ST" != NOERROR ]; then L=CRIT NOTE="server says $ST"
+  elif [ "${AN:-0}" -eq 0 ]; then L=CRIT NOTE="no record"
   elif [ "${MS:-0}" -gt 1000 ]; then L=WARN NOTE="slow"
   elif [ $T = closed ]; then L=WARN NOTE="TCP 53 closed, large answers fail"
   elif [ -n "$REF" ] && [ "$ANS" != "$REF" ]; then L=WARN NOTE="answer differs"
@@ -100,7 +102,9 @@ else
   [ $MS -gt 2000 ] && warn "slow lookup: first nameserver dead?"
   HF=$(awk -v n="$Q" '!/^#/{for(i=2;i<=NF;i++) if($i==n) print $1}' /etc/hosts)
   [ -n "$HF" ] && warn "$Q comes from /etc/hosts ($HF), not DNS"
-  RV=$(getent hosts "$IP" | awk '{print $2}')
+  [ "${Q%%.*}" = "$(hostname -s)" ] &&
+    echo "note: this server's own name; nsswitch can answer it without DNS"
+  RV=$(getent hosts "$IP" | awk '{print $2; exit}')
   if [ -z "$RV" ]; then echo "no reverse record for $IP"
   elif [ "${RV%%.*}" != "${Q%%.*}" ]; then warn "$IP reverses to $RV"; fi
 fi

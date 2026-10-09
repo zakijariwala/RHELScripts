@@ -9,9 +9,12 @@ Replaces the old `dns_check.sh`. Read-only: writes no files.
 echo $?                     # 0 OK, 1 WARN, 2 CRIT
 ```
 
-Setting at the top: `TEST_NAME`, a name every nameserver must answer.
-Left as `CHANGE_ME`, the script uses this server's own name
-(`hostname -f`).
+Setting at the top: `TEST_NAME`, a name every nameserver must answer
+(the domain the old dns_check.sh queried). Left as `CHANGE_ME`, the
+script stops and asks for it, unless a name is given on the command
+line. Do not use the server's own short name: servers are often not in
+DNS, and the system resolver answers its own name locally (nsswitch
+`myhostname`), so DNS looks broken while it is not.
 
 ## What it checks
 

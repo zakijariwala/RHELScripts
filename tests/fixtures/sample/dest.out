@@ -1,3 +1,0 @@
-ARCHIVE DEST|Dest 1 -> USE_DB_RECOVERY_FILE_DEST|VALID|OK
-ARCHIVE DEST|Dest 2 -> DEMODB_DR|VALID|OK
-DB SYNC STATUS|standby destination|detected 2, configured auto|INFO

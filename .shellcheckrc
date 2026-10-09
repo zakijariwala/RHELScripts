@@ -1,2 +1,0 @@
-# rate() and other shared helpers are unused in some scripts by design.
-disable=SC2317

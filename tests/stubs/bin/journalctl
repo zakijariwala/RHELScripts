@@ -1,4 +1,0 @@
-#!/bin/bash
-# Stub journalctl. Prints $STUB_FIXTURES/journalctl.out; exits with journalctl.rc if present.
-cat "$STUB_FIXTURES/journalctl.out" 2>/dev/null
-exit "$(cat "$STUB_FIXTURES/journalctl.rc" 2>/dev/null || echo 0)"

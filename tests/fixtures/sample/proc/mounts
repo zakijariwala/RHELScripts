@@ -1,4 +1,0 @@
-/dev/mapper/rootvg-root / xfs rw,relatime,attr2,inode64 0 0
-/dev/sda1 /boot xfs rw,relatime 0 0
-/dev/mapper/u01vg-u01 /u01 xfs rw,relatime 0 0
-proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0

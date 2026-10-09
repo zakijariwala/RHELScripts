@@ -1,6 +1,0 @@
-Filesystem                1024-blocks      Used Available Capacity Mounted on
-/dev/mapper/rootvg-root      20961280   8912030  12049250      43% /
-/dev/sda1                     1038336    262144    776192      26% /boot
-/dev/mapper/rootvg-var       10475520   6120448   4355072      59% /var
-/dev/mapper/rootvg-tmp        5232640    301200   4931440       6% /tmp
-/dev/mapper/u01vg-u01       104806400  72330112  32476288      70% /u01

@@ -1,3 +1,0 @@
-#!/bin/bash
-# Stub hostname. Prints racnode1 (or racnode2 when STUB_NODE=2).
-echo "racnode${STUB_NODE:-1}"

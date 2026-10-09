@@ -1,8 +1,0 @@
-#!/bin/bash
-# Stub systemctl. "list-units ..." prints systemctl-failed.out;
-# "is-active UNIT" prints the line for UNIT in systemctl-active.out.
-case "$1" in
-    list-units) cat "$STUB_FIXTURES/systemctl-failed.out" 2>/dev/null ;;
-    is-active) awk -v u="$2" '$1 == u { print $2; f = 1 }
-        END { if (!f) print "unknown" }' "$STUB_FIXTURES/systemctl-active.out" ;;
-esac

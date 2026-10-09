@@ -1,4 +1,0 @@
-#!/bin/bash
-# Stub uname. Prints $STUB_FIXTURES/uname.out; exits with uname.rc if present.
-cat "$STUB_FIXTURES/uname.out" 2>/dev/null
-exit "$(cat "$STUB_FIXTURES/uname.rc" 2>/dev/null || echo 0)"

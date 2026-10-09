@@ -1,6 +1,0 @@
-#!/bin/bash
-# Stub df. Prints $STUB_FIXTURES/df.nodeN, or df-i.nodeN with -i.
-case " $* " in *" -i "*) k="df-i" ;; *) k="df" ;; esac
-f="$STUB_FIXTURES/$k.node${STUB_NODE:-1}"
-[ -r "$f" ] || { echo "df: command not found" >&2; exit 127; }
-cat "$f"

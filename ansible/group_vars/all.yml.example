@@ -1,5 +1,0 @@
----
-# Example shared variables, every host. Copy to group_vars/all.yml on the
-# control node. Secrets go in a vault file, never here.
-ansible_user: CHANGE_ME_ANSIBLE_USER
-ansible_port: 22

@@ -1,4 +1,0 @@
-#!/bin/bash
-# Stub chronyc. Prints $STUB_FIXTURES/chronyc.out; exits with chronyc.rc if present.
-cat "$STUB_FIXTURES/chronyc.out" 2>/dev/null
-exit "$(cat "$STUB_FIXTURES/chronyc.rc" 2>/dev/null || echo 0)"

@@ -1,5 +1,0 @@
-#!/bin/bash
-# Stub free. Prints $STUB_FIXTURES/free.node${STUB_NODE:-1}; exits 127 if absent.
-f="$STUB_FIXTURES/free.node${STUB_NODE:-1}"
-[ -r "$f" ] || { echo "free: command not found" >&2; exit 127; }
-cat "$f"

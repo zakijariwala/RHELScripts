@@ -1,5 +1,0 @@
-#!/bin/bash
-# Stub sar. Prints $STUB_FIXTURES/sar.node${STUB_NODE:-1}; exits 127 if absent.
-f="$STUB_FIXTURES/sar.node${STUB_NODE:-1}"
-[ -r "$f" ] || { echo "sar: command not found" >&2; exit 127; }
-cat "$f"

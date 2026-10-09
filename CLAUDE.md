@@ -16,3 +16,5 @@ Rules for every script unless the owner says otherwise:
 - Lines `[ OK ]`, `[WARN]`, `[CRIT]`; exit 0/1/2.
 - shellcheck clean (style notes may stay if the fix hurts readability).
 - Each script folder has a README: how to run, settings, what it checks.
+- New scripts: propose the design first. Approved designs go in
+  docs/planned.md. Build only when the owner says so.

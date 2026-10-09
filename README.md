@@ -11,3 +11,4 @@ run it when needed. Scripts are short enough to type by hand.
 | [health-check](scripts/health-check/) | OS, disk, time, agents; database, ASM, listener and cluster on DB nodes |
 
 [docs/inventory.md](docs/inventory.md) lists the servers.
+[docs/planned.md](docs/planned.md) holds approved designs not built yet.

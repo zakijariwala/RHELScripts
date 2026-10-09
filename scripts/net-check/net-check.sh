@@ -54,6 +54,8 @@ UP=0
 for P in /sys/class/net/*; do
   IF=${P##*/}
   [ "$IF" = lo ] || [ ! -d "$P" ] || [ -e "$P/master" ] && continue
+  case $IF in virbr*|docker*|veth*|vnet*|br-*|cni*)
+    info "$IF" "virtual bridge, ignored"; continue ;; esac
   STATE=$(cat "$P/operstate")
   IP=$(ip -4 -o addr show dev "$IF" | awk '{print $4}' | head -1)
   if [ -z "$IP" ]; then info "$IF" "no IPv4 address (unused)"

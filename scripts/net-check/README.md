@@ -35,7 +35,8 @@ prdb1 1521
 
 | Layer | Check | Fail means |
 |---|---|---|
-| Local server | every interface with an IPv4 address is up; rx/tx errors since boot (WARN) | LOCAL SERVER |
+| Local server | virtual bridges (virbr, docker, veth, vnet, br-, cni) are listed and ignored: a libvirt `virbr0` with no guests is always DOWN |
+| | every other interface with an IPv4 address is up; rx/tx errors since boot (WARN) | LOCAL SERVER |
 | | bonds: every slave up (WARN when one is down) | |
 | | a default route exists | LOCAL SERVER |
 | Gateway | ping the gateway | NETWORK |

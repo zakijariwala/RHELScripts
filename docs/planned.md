@@ -6,7 +6,7 @@ table in README.md.
 
 ## net-check.sh
 
-Status: design approved, not started.
+Status: design approved, questions answered, waiting for "build".
 
 Runs on the server that has the problem. Checks layer by layer, bottom
 up, and ends with one line:
@@ -18,12 +18,26 @@ VERDICT: LOCAL SERVER | DNS | NETWORK | TARGET SERVICE | OK
 Usage:
 
 ```
-./net-check.sh                  # this server's own network health only
+./net-check.sh                  # this server + resolv.conf + fixed targets
 ./net-check.sh prdb1 1521       # can this server reach prdb1 on 1521?
-./net-check.sh 10.x.x.74 1521   # by IP (skips the DNS layer)
+./net-check.sh 10.x.x.74 2200   # by IP (skips the name lookup)
 ```
 
-Default port 22. Read-only, login user, no root.
+Default port 22. Ports that matter at the site: 22, 1521, 2200.
+IPv4 only. Read-only, login user, no root.
+
+### Settings block (top of the script)
+
+```
+TEST_NAME=CHANGE_ME       # name every nameserver must answer
+# Fixed targets, tested on every run. One per line: NAME PORT
+# To add a target, add a line. Empty = none.
+TARGETS="
+"
+```
+
+Fixed targets are the obvious place to grow the script: no code change,
+one line per target.
 
 ### Layers
 
@@ -33,23 +47,30 @@ Default port 22. Read-only, login user, no root.
    - bonding: every bond has its slaves up (`/proc/net/bonding/*`)
    - interface error/drop counters not zero (WARN)
      (`/sys/class/net/*/statistics`)
-2. **Gateway** (fail = NETWORK)
-   - ping the default gateway
+2. **Gateway** (fail = NETWORK). Ping to the gateway works at the site.
+   - ping the default gateway; no reply = CRIT
    - gateway ARP entry (`ip neigh`): FAILED/INCOMPLETE = layer 2 problem
      (cable, switch port, VLAN)
-3. **DNS** (always; replaces the old `dns_check.sh`; fail = DNS)
-   - `/etc/resolv.conf`: at least one nameserver (skip `#` and `;`
-     comments); show `search` and `options timeout/attempts/rotate`
-   - per nameserver, a table like the old script's but with a real
-     status: TCP 53 (bash `/dev/tcp`, under `timeout`) **and** a UDP
-     query (`dig +notcp`), since DNS is mainly UDP and one can work while
-     the other is blocked
-   - per nameserver, `dig @server TEST_NAME`: status must be NOERROR with
-     at least one answer; show query time; no reply = CRIT, SERVFAIL /
-     NXDOMAIN = CRIT, over 1000 ms = WARN
-   - flag nameservers that give different answers for the same name
-   - `TEST_NAME` hardcoded at the top (the internal domain the old script
-     queried); the target name is queried too when one is given
+   - MTU probe to the gateway, `ping -M do -s 1472`: catches "connects
+     but large transfers hang"
+3. **DNS** (always; replaces the old `dns_check.sh`; fail = DNS).
+   Everything in `/etc/resolv.conf` is checked:
+   - file missing or no `nameserver` line = CRIT (skip `#`/`;` comments)
+   - every `nameserver`:
+     - TCP 53 with `nc -zv -w 3`, UDP with `dig +notcp`; one working and
+       the other not = WARN (firewall blocks one)
+     - `dig @server TEST_NAME`: NOERROR with at least one answer, query
+       time shown; no reply / SERVFAIL / NXDOMAIN / REFUSED = CRIT,
+       over 1000 ms = WARN
+     - answers compared across nameservers; different = WARN
+   - more than 3 nameservers = WARN (glibc only uses the first 3)
+   - duplicate nameserver lines = WARN
+   - every `search` domain answers on each nameserver (`dig SOA`);
+     a dead search domain slows every short-name lookup = WARN;
+     more than 6 domains = WARN (glibc limit)
+   - `options`: shown (timeout, attempts, rotate, ndots); `timeout` over
+     5 or `attempts` over 3 = WARN (slow failover); `ndots` over 1 = INFO
+   - unknown lines = WARN (typos are silently ignored by the resolver)
    - system resolver path: `getent hosts` result and time taken (over 2s
      usually means the first nameserver is dead); say so if the answer
      comes from `/etc/hosts` (stale entries)
@@ -63,25 +84,27 @@ Default port 22. Read-only, login user, no root.
    - dig result not checked: a timeout or SERVFAIL still printed a row,
      only the query time was read (blank on failure)
    - only one name queried, answers never compared between servers
+   - search domains and options never checked
    - system resolver (`/etc/hosts`, nsswitch, search domains) never
      tested, though that is what applications use
    - writes `file1`/`file2` in the current folder and glues them with
      `pr`; `for i in 177` loop builds an IP that is never checked
    - no exit code
-4. **Path to target**
-   - ping the target; failure alone is only WARN (ICMP often blocked)
-   - TCP connect to the port:
+4. **Path to target** (the argument, then every fixed target).
+   No ping: ICMP between environments is blocked at the site.
+   - `nc -zv -w 3 HOST PORT` (inside `timeout`), result read from its
+     message:
 
-     | Result | Meaning | Verdict |
+     | nc says | Meaning | Verdict |
      |---|---|---|
-     | connected | path and service fine | OK |
-     | connection refused | host answered, nothing listening | TARGET SERVICE |
-     | timeout | firewall drop or dead host | NETWORK |
-     | no route to host | routing, or host down | NETWORK |
+     | `Connected to` | path and service fine | OK |
+     | `Connection refused` | host answered, nothing listening | TARGET SERVICE |
+     | `TIMEOUT` / no answer | firewall drop or dead host | NETWORK |
+     | `No route to host` | routing, or host down | NETWORK |
+     | nc missing | fall back to bash `/dev/tcp` | - |
 
-   - on timeout or no route: `tracepath` to show the last hop that answered
-   - MTU probe `ping -M do -s 1472`: catches "connects but large transfers
-     hang"
+   - on timeout or no route: `tracepath` (if present) shows the last hop
+     that answered, INFO only (it may be blocked too)
 
 Verdict = the first layer that fails. Higher layers still run where they
 can.
@@ -90,20 +113,21 @@ can.
 
 - one file, about 130 lines, typeable, same style as health-check
   (`[ OK ]`/`[WARN]`/`[CRIT]`, exit 0/1/2, plus the VERDICT line)
-- `dig` and `tracepath` optional: skipped with a note when missing
+- `dig` 9.11 options only: `@server`, `+time`, `+tries`, `+tcp`/`+notcp`,
+  `+short` (dig 9.11.36 confirmed on the PROD app server); getent-only
+  fallback without bind-utils
+- `nc` is nmap-ncat on RHEL 8/9 (`-z` supported)
+- `tracepath` optional: skipped with a note when missing
 
-### Open questions (answer before building)
+### Answered
 
-1. ~~Is `dig` on the servers?~~ Confirmed: dig 9.11.36 (RHEL 8
-   bind-utils) on the PROD app server. Use only options 9.11 has:
-   `@server`, `+time`, `+tries`, `+tcp`/`+notcp`, `+short`. Keep a
-   getent-only fallback for servers without bind-utils.
-2. Is ping allowed between environments and to the gateway? If not,
-   ping results become INFO.
-3. Default targets when run with no arguments (DNS, NTP, backup
-   server)? Needs names/IPs and ports.
-4. Which ports matter: 22, 1521, and which app/web ports?
-5. IPv4 only OK?
+1. dig: 9.11.36 present.
+2. Ping: works to the gateway, blocked between environments. Use
+   `nc -zv` between servers.
+3. Fixed targets: none yet; `TARGETS` block makes adding them a
+   one-line change.
+4. Ports: 22, 1521, 2200.
+5. IPv4 only.
 
 ## dr-drill-check.sh
 

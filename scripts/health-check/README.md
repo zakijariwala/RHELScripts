@@ -35,6 +35,7 @@ Settings at the top: `DB` (database name, instances are `vpsdb1`,
 | `packagekitd` required | PackageKit starts on demand and exits when idle: false CRIT | dropped |
 | `sleep 1` per service | 9 seconds wasted | removed |
 | no load/memory/swap | blind to the most common outages | load per CPU, MemAvailable %, swap % |
+| process check only | an agent running now but disabled in systemd does not come back after a reboot | WARN when the agent's unit is disabled |
 | no systemd view | crashed services not in the list go unseen | lists failed systemd units |
 | `pgrep ora_pmon_vpsdb1` | only right on node 1; red on every web/app server | finds every `vpsdb` instance; DB checks only on DB servers |
 | no ASM check | database down when ASM is down, cause hidden | ASM pmon checked |

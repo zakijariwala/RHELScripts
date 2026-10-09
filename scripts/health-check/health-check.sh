@@ -83,6 +83,8 @@ line "Agents"
 for A in $AGENTS; do
   if pgrep -x "$A" > /dev/null; then ok "$A running"
   else crit "$A not running"; fi
+  [ "$(systemctl is-enabled "$A" 2>/dev/null)" = disabled ] &&
+    warn "$A unit is disabled: will not start after a reboot"
 done
 FAILED=$(systemctl --failed --no-legend --plain 2>/dev/null | awk '{print $1}')
 if [ $? -ne 0 ]; then warn "systemctl did not answer"
